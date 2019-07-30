@@ -1,6 +1,5 @@
-# @todo, Update to skpr/mtk....
-ARG ${from}=previousnext/mysql:latest
-FROM previousnext/mysql:latest
+ARG from=skpr/mtk-mysql:latest
+FROM ${from}
 
 ARG db_name=local
 ARG db_user=local
