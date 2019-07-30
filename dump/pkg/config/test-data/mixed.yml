@@ -1,0 +1,10 @@
+ignore:
+  - foo
+nodata:
+  - bar
+sanitize:
+  tables:
+    - name: baz
+      fields:
+        - name: qux
+          value: quux
