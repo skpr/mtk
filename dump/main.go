@@ -55,7 +55,7 @@ func main() {
 }
 
 //
-func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.File) error {
+func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	logger := log.New(stderr, "", 0)
 
 	d := dumper.NewMySQLDumper(db, logger)

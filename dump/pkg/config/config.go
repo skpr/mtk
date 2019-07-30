@@ -10,8 +10,8 @@ import (
 // DefaultPlaceholder used for setting sanitized fields.
 const DefaultPlaceholder = "SANITIZED"
 
-// File for configuring dump rules.
-type File struct {
+// Rules for configuring dump.
+type Rules struct {
 	Sanitize Sanitize `yaml:"sanitize" json:"sanitize"`
 	NoData   []string `yaml:"nodata"   json:"nodata"`
 	Ignore   []string `yaml:"ignore"   json:"ignore"`
@@ -35,23 +35,23 @@ type Field struct {
 }
 
 // Load a config file.
-func Load(path string) (File, error) {
-	var file File
+func Load(path string) (Rules, error) {
+	var rules Rules
 
 	// We don't want to fail if the config file does not exist.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return file, nil
+		return rules, nil
 	}
 
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
-		return file, err
+		return rules, err
 	}
 
-	err = yaml.Unmarshal(f, &file)
+	err = yaml.Unmarshal(f, &rules)
 	if err != nil {
-		return file, err
+		return rules, err
 	}
 
-	return file, nil
+	return rules, nil
 }
