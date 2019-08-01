@@ -1,5 +1,5 @@
-Package
-=======
+Build
+=====
 
 An image used for packaging and distributing MySQL database images.
 

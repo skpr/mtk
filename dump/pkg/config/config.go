@@ -10,29 +10,15 @@ import (
 // DefaultPlaceholder used for setting sanitized fields.
 const DefaultPlaceholder = "SANITIZED"
 
-// Rules for configuring dump.
+// Rules for configuring the dump.
 type Rules struct {
-	Sanitize Sanitize `yaml:"sanitize" json:"sanitize"`
-	NoData   []string `yaml:"nodata"   json:"nodata"`
-	Ignore   []string `yaml:"ignore"   json:"ignore"`
+	Sanitize map[string]Sanitize `yaml:"sanitize" json:"sanitize"`
+	NoData   []string            `yaml:"nodata"   json:"nodata"`
+	Ignore   []string            `yaml:"ignore"   json:"ignore"`
 }
 
 // Sanitize rules for while dumping a database.
-type Sanitize struct {
-	Tables []Table `yaml:"tables" json:"tables"`
-}
-
-// Table rules for while dumping a database.
-type Table struct {
-	Name   string  `yaml:"name"   json:"name"`
-	Fields []Field `yaml:"fields" json:"fields"`
-}
-
-// Field rules for while dumping a database.
-type Field struct {
-	Name  string `yaml:"name"  json:"name"`
-	Value string `yaml:"value" json:"value"`
-}
+type Sanitize map[string]string
 
 // Load a config file.
 func Load(path string) (Rules, error) {

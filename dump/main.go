@@ -30,7 +30,7 @@ var (
 func main() {
 	kingpin.Parse()
 
-	conn := fmt.Sprintf("%s:%s@%s(%s:%s)/%s", *cliUsername, *cliPassword, *cliProtocol, *cliHostname, *cliPort, *cliPort)
+	conn := fmt.Sprintf("%s:%s@%s(%s:%s)/%s", *cliUsername, *cliPassword, *cliProtocol, *cliHostname, *cliPort, *cliDatabase)
 
 	db, err := sql.Open("mysql", conn)
 	if err != nil {
@@ -86,7 +86,7 @@ func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	}
 
 	// Assign our sanitization rules to the dumper.
-	d.SelectMap = cfg.Sanitize.Map()
+	d.SelectMap = cfg.SanitizeMap()
 
 	return d.Dump(stdout)
 }

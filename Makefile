@@ -11,7 +11,7 @@ endef
 
 build:
 	$(call build_and_push,dump)
-	$(call build_and_push,package)
+	$(call build_and_push,build)
 	$(call build_and_push,mysql)
 
 .PHONY: *

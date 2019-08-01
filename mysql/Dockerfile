@@ -1,9 +1,9 @@
-FROM alpine:latest
+FROM alpine:3.10
 
 RUN apk add --update bash mysql mysql-client && \
     rm -f /var/cache/apk/* && \
     mkdir -p /run/mysqld
-COPY my.cnf /etc/mysql/my.cnf
+# COPY my.cnf /etc/mysql/my.cnf
 
 ENV MYSQL_TCP_PORT=3306
 
