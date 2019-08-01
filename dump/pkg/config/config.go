@@ -12,13 +12,13 @@ const DefaultPlaceholder = "SANITIZED"
 
 // Rules for configuring the dump.
 type Rules struct {
-	Sanitize map[string]Sanitize `yaml:"sanitize" json:"sanitize"`
-	NoData   []string            `yaml:"nodata"   json:"nodata"`
-	Ignore   []string            `yaml:"ignore"   json:"ignore"`
+	Rewrite map[string]Rewrite `yaml:"rewrite" json:"rewrite"`
+	NoData  []string           `yaml:"nodata"  json:"nodata"`
+	Ignore  []string           `yaml:"ignore"  json:"ignore"`
 }
 
-// Sanitize rules for while dumping a database.
-type Sanitize map[string]string
+// Rewrite rules for while dumping a database.
+type Rewrite map[string]string
 
 // Load a config file.
 func Load(path string) (Rules, error) {

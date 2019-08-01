@@ -4,7 +4,7 @@ package config
 func (r Rules) SanitizeMap() map[string]map[string]string {
 	selectMap := make(map[string]map[string]string)
 
-	for table, fields := range r.Sanitize {
+	for table, fields := range r.Rewrite {
 		selectMap[table] = fields
 	}
 
