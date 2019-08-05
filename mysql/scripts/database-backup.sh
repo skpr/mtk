@@ -12,24 +12,24 @@ info()    { echo "[INFO]  $*" ; }
 fatal()   { echo "[FATAL] $*" ; exit 1 ; }
 
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
-    if [ -z $DATABASE_HOST ]; then
-        fatal "Not found: DATABASE_HOST"
+    if [ -z $MYSQL_HOSTNAME ]; then
+        fatal "Not found: MYSQL_HOSTNAME"
     fi
 
-    if [ -z $DATABASE_PORT ]; then
-        fatal "Not found: DATABASE_PORT"
+    if [ -z $MYSQL_PORT ]; then
+        fatal "Not found: MYSQL_PORT"
     fi
 
-    if [ -z $DATABASE_USER ]; then
-        fatal "Not found: DATABASE_USER"
+    if [ -z $MYSQL_USERNAME ]; then
+        fatal "Not found: MYSQL_USERNAME"
     fi
 
-    if [ -z $DATABASE_PASSWORD ]; then
-        fatal "Not found: DATABASE_PASSWORD"
+    if [ -z $MYSQL_PASSWORD ]; then
+        fatal "Not found: MYSQL_PASSWORD"
     fi
 
-    if [ -z $DATABASE_NAME ]; then
-        fatal "Not found: DATABASE_NAME"
+    if [ -z $MYSQL_DATABASE ]; then
+        fatal "Not found: MYSQL_DATABASE"
     fi
 
     if [ -z $FILE ]; then
@@ -39,10 +39,10 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     info "Backup Started"
 
     mysqldump --single-transaction \
-            --host=$DATABASE_HOST \
-            --port=$DATABASE_PORT \
-            --user=$DATABASE_USER \
-            --password=$DATABASE_PASSWORD $DATABASE_NAME
+            --host=$MYSQL_HOSTNAME \
+            --port=$MYSQL_PORT \
+            --user=$MYSQL_PASSWORD \
+            --password=$MYSQL_PASSWORD $MYSQL_DATABASE
 
     info "Backup Complete"
 fi
