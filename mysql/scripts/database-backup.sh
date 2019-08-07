@@ -38,7 +38,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     mysqldump --single-transaction \
             --host=$MYSQL_HOSTNAME \
             --port=$MYSQL_PORT \
-            --user=$MYSQL_PASSWORD \
+            --user=$MYSQL_USERNAME \
             --password=$MYSQL_PASSWORD $MYSQL_DATABASE
 
     info "Backup Complete"
