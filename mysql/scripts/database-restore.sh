@@ -41,12 +41,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     # Connection string which will be used to perform operations on the MySQL database.
     CONNECTION_STRING="mysql --host=$MYSQL_HOSTNAME --port=$MYSQL_PORT --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE"
 
-    TABLES=$($CONNECTION_STRING -e 'show tables' | awk '{ print $1}' | grep -v '^Tables' )
-
-    if [ "$TABLES" == "" ]
-    then
-        fatal "Error - No tables found in $MYSQL_DATABASE database!"
-    fi
+    TABLES=$($CONNECTION_STRING -e 'show tables' | awk '{ print $1}' | grep -v '^Tables' || true )
     
     for table in $TABLES
     do
