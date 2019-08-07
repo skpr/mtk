@@ -8,8 +8,9 @@ set -euo pipefail
 usage() { grep '^#/' "$0" | cut -c4- ; exit 0 ; }
 expr "$*" : ".*--help" > /dev/null && usage
 
-info()    { echo "[INFO]  $*" ; }
-fatal()   { echo "[FATAL] $*" ; exit 1 ; }
+echoerr() { printf "%s\n" "$*" >&2; }
+info()    { echoerr "[INFO]  $*" ; }
+fatal()   { echoerr "[FATAL] $*" ; exit 1 ; }
 
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     if [ -z $MYSQL_HOSTNAME ]; then
@@ -30,10 +31,6 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
 
     if [ -z $MYSQL_DATABASE ]; then
         fatal "Not found: MYSQL_DATABASE"
-    fi
-
-    if [ -z $FILE ]; then
-        fatal "Not found: FILE"
     fi
 
     info "Backup Started"
