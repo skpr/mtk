@@ -89,7 +89,7 @@ $ docker run -it -v $HOME/.docker:/kaniko/.docker \
                                        --destination=docker.io/my/image:$(date +%F)
 ```
 
-### Use
+### Integrate
 
 ```bash
 $ cat docker-compose.yml
@@ -99,7 +99,6 @@ version: "3"
 services:
 
   # Services used as part of the local development environment.
-
   mysql:
     image: docker.io/my/image:latest
 ```

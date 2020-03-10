@@ -1,0 +1,48 @@
+schemaVersion: '2.0.0'
+
+commandTests:
+  - name: 'ready for connections'
+    command: "timeout"
+    args:
+      - "5" # This should be all the time we need to boot and verify MySQLs output.
+      - "mysqld"
+    # MySQL logs all it's startup output to stderr.
+    expectedError:
+      - "mysqld: ready for connections."
+      - "mysqld: Shutdown complete"
+
+fileExistenceTests:
+  - name: 'Database: Backup'
+    path: '/usr/local/bin/database-backup'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+  
+  - name: 'Database: Create'
+    path: '/usr/local/bin/database-create'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+  
+  - name: 'Database: Import'
+    path: '/usr/local/bin/database-import'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+  
+  - name: 'Database: Restore'
+    path: '/usr/local/bin/database-restore'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+  
+  - name: 'MySQL: Start'
+    path: '/usr/local/bin/mysql-start'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+  
+  - name: 'MySQL: Stop'
+    path: '/usr/local/bin/mysql-stop'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
+
+  - name: 'User: Create'
+    path: '/usr/local/bin/user-create'
+    shouldExist: true
+    permissions: '-rwxr-xr-x'
