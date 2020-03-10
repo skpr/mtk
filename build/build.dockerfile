@@ -1,4 +1,4 @@
-ARG from=skpr/mysql:latest
+ARG from=skpr/mtk-mysql:latest
 FROM ${from}
 
 ARG db_name=local
