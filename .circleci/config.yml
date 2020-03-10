@@ -1,0 +1,37 @@
+version: 2
+
+build: &build
+  
+jobs:
+  build_release:
+    docker:
+      - image: previousnext/container-builder:latest
+    steps:
+      - setup_remote_docker
+      - checkout
+      - run: make build
+      - run: make test
+      - run: |
+          if [ "$CIRCLE_BRANCH" == "master" ]; then
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            make push
+          fi
+
+workflows:
+  version: 2
+
+  build:
+    jobs:
+      - build_release
+
+  nightly:
+    jobs:
+      - build_release
+    triggers:
+      - schedule:
+          # Scheduled build for 2am AEST nightly
+          cron: "0 15 * * *"
+          filters:
+            branches:
+              only:
+                - master

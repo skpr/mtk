@@ -27,6 +27,7 @@ The following rules cover some common Drupal 7/8 scenarios were data should be s
 ```bash
 $ cat mtk.yml
 
+---
 sanitize:
   tables:
     # Drupal 7
@@ -89,17 +90,17 @@ $ docker run -it -v $HOME/.docker:/kaniko/.docker \
                                        --destination=docker.io/my/image:$(date +%F)
 ```
 
-### Use
+### Integrate
 
 ```bash
 $ cat docker-compose.yml
 
+---
 version: "3"
 
 services:
 
   # Services used as part of the local development environment.
-
   mysql:
     image: docker.io/my/image:latest
 ```

@@ -1,5 +1,4 @@
-# @todo, Needs to use skpr/mtk-mysql:latest
-ARG from=previousnext/mysql:latest
+ARG from=skpr/mysql:latest
 FROM ${from}
 
 ARG db_name=local

@@ -9,6 +9,39 @@ Dumps a sanitized database based on a ruleset given by the user.
 # View the rules which will be used.
 $ cat mtk.yml
 
+sanitize:
+  tables:
+    # Drupal 7
+    - name: users
+      fields:
+        - name: mail
+          value: "SANITIZED_MAIL"
+        - name: pass
+          value: "SANITIZED_PASSWORD"
+    # Drupal 8
+    - name: users_field_data
+      fields:
+        - name: mail
+          value: "SANITIZED_MAIL"
+        - name: pass
+          value: "SANITIZED_PASSWORD"
+
+nodata:
+  - cache*
+  - captcha_sessions
+  - history
+  - flood
+  - batch
+  - queue
+  - sessions
+  - semaphore
+  - search_api_task
+  - search_dataset
+  - search_index
+  - search_total
+
+ignore:
+  - __ACQUIA_MONITORING__
 .......
 
 # Configure the command. NOTE: We also accept myqldump flags.
