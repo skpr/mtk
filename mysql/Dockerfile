@@ -4,7 +4,7 @@ RUN apk add bash \
             mariadb \
             mariadb-client
 
-ADD my.cnf /etc/mysql/my.cnf
+ADD my.cnf /etc/my.cnf.d/mariadb-server.cnf
 
 RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
