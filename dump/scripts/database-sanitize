@@ -21,7 +21,7 @@ echo "Creating temporary account"
 user-create $MYSQL_DATABASE $MYSQL_USERNAME $MYSQL_PASSWORD
 
 echo "Dumping sanitized database"
-mtk db dump > $TARGET
+mtk-dump > $TARGET
 
 echo "Stopping MySQL"
 mysql-stop
