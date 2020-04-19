@@ -2,19 +2,19 @@ package envar
 
 const (
 	// MaxConn defines the environment variable when using the command line.
-	MaxConn = "MYSQL_MAX_CONN"
+	MaxConn = "MTK_DUMP_MAX_CONN"
 	// Config defines the environment variable when using the command line.
-	Config = "MYSQL_CONFIG"
+	Config = "MTK_DUMP_CONFIG"
 	// Hostname defines the environment variable when using the command line.
-	Hostname = "MYSQL_HOSTNAME"
+	Hostname = "MTK_DUMP_HOSTNAME"
 	// Username defines the environment variable when using the command line.
-	Username = "MYSQL_USERNAME"
+	Username = "MTK_DUMP_USERNAME"
 	// Password defines the environment variable when using the command line.
-	Password = "MYSQL_PASSWORD"
+	Password = "MTK_DUMP_PASSWORD"
 	// Protocol defines the environment variable when using the command line.
-	Protocol = "MYSQL_PROTOCOL"
+	Protocol = "MTK_DUMP_PROTOCOL"
 	// Port defines the environment variable when using the command line.
-	Port = "MYSQL_PORT"
+	Port = "MTK_DUMP_PORT"
 	// Database defines the environment variable when using the command line.
-	Database = "MYSQL_DATABASE"
+	Database = "MTK_DUMP_DATABASE"
 )
