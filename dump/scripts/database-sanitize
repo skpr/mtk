@@ -1,9 +1,9 @@
 #!/bin/bash
 
-export MYSQL_HOSTNAME=127.0.0.1
-export MYSQL_USERNAME=tmp
-export MYSQL_PASSWORD=tmp
-export MYSQL_DATABASE=tmp
+export MTK_DUMP_HOSTNAME=127.0.0.1
+export MTK_DUMP_USERNAME=tmp
+export MTK_DUMP_PASSWORD=tmp
+export MTK_DUMP_DATABASE=tmp
 
 SOURCE=$1
 TARGET=$2
@@ -15,10 +15,10 @@ while ! nc -z localhost 3306; do
 done
 
 echo "Creating temporary database"
-database-create $MYSQL_DATABASE $SOURCE
+database-create $MTK_DUMP_DATABASE $SOURCE
 
 echo "Creating temporary account"
-user-create $MYSQL_DATABASE $MYSQL_USERNAME $MYSQL_PASSWORD
+user-create $MTK_DUMP_DATABASE $MTK_DUMP_USERNAME $MTK_DUMP_PASSWORD
 
 echo "Dumping sanitized database"
 mtk-dump > $TARGET
