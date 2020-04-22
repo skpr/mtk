@@ -6,7 +6,7 @@ NAME=$3
 FILE=$4
 
 mysql-start &
-while ! nc -z localhost 3306; do
+while ! nc -z 127.0.0.1 3306; do
   sleep 0.1
 done
 
