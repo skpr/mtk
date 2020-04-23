@@ -5,3 +5,6 @@ nodata:
 rewrite:
   baz:
     qux: quux
+where:
+  corge: |-
+    grault IN (SELECT garply FROM waldo)

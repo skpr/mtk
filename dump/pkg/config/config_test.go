@@ -46,6 +46,15 @@ func TestLoad(t *testing.T) {
 			},
 		},
 		{
+			"where",
+			"test-data/where.yml",
+			Rules{
+				Where: map[string]string{
+					"some_table": "revision_id IN (SELECT revision_id FROM another_table)",
+				},
+			},
+		},
+		{
 			"mixed",
 			"test-data/mixed.yml",
 			Rules{
@@ -56,10 +65,12 @@ func TestLoad(t *testing.T) {
 						"qux": "quux",
 					},
 				},
+				Where: map[string]string{
+					"corge": "grault IN (SELECT garply FROM waldo)",
+				},
 			},
 		},
 	}
-
 	for _, testCase := range testCases {
 		actual, err := Load(testCase.config)
 		fmt.Println(actual.SanitizeMap())
