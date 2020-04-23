@@ -88,5 +88,8 @@ func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	// Assign our sanitization rules to the dumper.
 	d.SelectMap = cfg.SanitizeMap()
 
+	// Assign conditional row rules to the dumper.
+	d.WhereMap = cfg.WhereMap()
+
 	return d.Dump(stdout)
 }
