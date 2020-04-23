@@ -31,13 +31,13 @@ $ cat mtk.yml
 rewrite:
   # Drupal 8.
   users_field_data:
-    mail: concat(uid, "@sanitized")
+    mail: concat(uid, "@localhost")
     # Quoting here denotes an explicit string rather than mysql expression. 
-    pass: '"SANITIZED_PASSWORD"'
+    pass: '"password"'
   # Drupal 7.
   users:
-    mail: concat(uid, "@sanitized")
-    pass: '"SANITIZED_PASSWORD"'
+    mail: concat(uid, "@localhost")
+    pass: '"password"'
 
 nodata:
   - cache*
