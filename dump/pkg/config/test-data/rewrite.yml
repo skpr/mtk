@@ -1,8 +1,4 @@
-sanitize:
-  tables:
-    - name: accounts
-      fields:
-        - name: email
-          value: "SANITIZED_MAIL"
-        - name: password
-          value: "SANITIZED_PASSWORD"
+rewrite:
+  accounts:
+    email: concat(id, "@sanitized")
+    password: '"SANITIZED_PASSWORD"'
