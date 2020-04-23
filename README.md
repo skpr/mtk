@@ -39,23 +39,6 @@ rewrite:
     mail: concat(uid, "@sanitized")
     pass: '"SANITIZED_PASSWORD"'
 
-sanitize:
-  tables:
-    # Drupal 7
-    - name: users
-      fields:
-        - name: mail
-          value: "SANITIZED_MAIL"
-        - name: pass
-          value: "SANITIZED_PASSWORD"
-    # Drupal 8
-    - name: users_field_data
-      fields:
-        - name: mail
-          value: "SANITIZED_MAIL"
-        - name: pass
-          value: "SANITIZED_PASSWORD"
-
 nodata:
   - cache*
   - captcha_sessions
