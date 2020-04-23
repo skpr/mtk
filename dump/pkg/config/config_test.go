@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,12 +11,12 @@ func TestLoad(t *testing.T) {
 	var testCases = []struct {
 		comment string
 		config  string
-		want    File
+		want    Rules
 	}{
 		{
 			"ignore",
 			"test-data/ignore.yml",
-			File{
+			Rules{
 				Ignore: []string{
 					"ignore_this_table",
 					"and_this_one",
@@ -25,7 +26,7 @@ func TestLoad(t *testing.T) {
 		{
 			"nodata",
 			"test-data/nodata.yml",
-			File{
+			Rules{
 				NoData: []string{
 					"table_with_structure_only_please",
 					"yeah_do_this_one_too",
@@ -34,23 +35,12 @@ func TestLoad(t *testing.T) {
 		},
 		{
 			"sanitize",
-			"test-data/sanitize.yml",
-			File{
-				Sanitize: Sanitize{
-					Tables: []Table{
-						{
-							"accounts",
-							[]Field{
-								{
-									Name:  "email",
-									Value: "SANITIZED_MAIL",
-								},
-								{
-									Name:  "password",
-									Value: "SANITIZED_PASSWORD",
-								},
-							},
-						},
+			"test-data/rewrite.yml",
+			Rules{
+				Rewrite: map[string]Rewrite{
+					"accounts": map[string]string{
+						"email": "concat(id, \"@sanitized\")",
+						"password": "\"SANITIZED_PASSWORD\"",
 					},
 				},
 			},
@@ -58,20 +48,12 @@ func TestLoad(t *testing.T) {
 		{
 			"mixed",
 			"test-data/mixed.yml",
-			File{
+			Rules{
 				Ignore: []string{"foo"},
 				NoData: []string{"bar"},
-				Sanitize: Sanitize{
-					[]Table{
-						Table{
-							"baz",
-							[]Field{
-								{
-									Name:  "qux",
-									Value: "quux",
-								},
-							},
-						},
+				Rewrite: map[string]Rewrite{
+					"baz": map[string]string{
+						"qux": "quux",
 					},
 				},
 			},
@@ -80,6 +62,7 @@ func TestLoad(t *testing.T) {
 
 	for _, testCase := range testCases {
 		actual, err := Load(testCase.config)
+		fmt.Println(actual.SanitizeMap())
 		assert.Nil(t, err)
 		assert.Equal(t, testCase.want, actual, testCase.comment)
 	}

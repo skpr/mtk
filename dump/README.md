@@ -9,22 +9,16 @@ Dumps a sanitized database based on a ruleset given by the user.
 # View the rules which will be used.
 $ cat mtk.yml
 
-sanitize:
-  tables:
-    # Drupal 7
-    - name: users
-      fields:
-        - name: mail
-          value: "SANITIZED_MAIL"
-        - name: pass
-          value: "SANITIZED_PASSWORD"
-    # Drupal 8
-    - name: users_field_data
-      fields:
-        - name: mail
-          value: "SANITIZED_MAIL"
-        - name: pass
-          value: "SANITIZED_PASSWORD"
+rewrite:
+  # Drupal 8.
+  users_field_data:
+    mail: concat(uid, "@localhost")
+    # Quoting here denotes an explicit string rather than mysql expression 
+    pass: '"password"'
+  # Drupal 7.
+  users:
+    mail: concat(uid, "@localhost")
+    pass: '"password"'
 
 nodata:
   - cache*

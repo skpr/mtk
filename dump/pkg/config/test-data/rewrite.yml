@@ -1,0 +1,4 @@
+rewrite:
+  accounts:
+    email: concat(id, "@sanitized")
+    password: '"SANITIZED_PASSWORD"'
