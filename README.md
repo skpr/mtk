@@ -28,6 +28,17 @@ The following rules cover some common Drupal 7/8 scenarios were data should be s
 $ cat mtk.yml
 
 ---
+rewrite:
+  # Drupal 8.
+  users_field_data:
+    mail: concat(uid, "@sanitized")
+    # Quoting here denotes an explicit string rather than mysql expression. 
+    pass: '"SANITIZED_PASSWORD"'
+  # Drupal 7.
+  users:
+    mail: concat(uid, "@sanitized")
+    pass: '"SANITIZED_PASSWORD"'
+
 sanitize:
   tables:
     # Drupal 7
