@@ -15,6 +15,7 @@ type Rules struct {
 	Rewrite map[string]Rewrite `yaml:"rewrite" json:"rewrite"`
 	NoData  []string           `yaml:"nodata"  json:"nodata"`
 	Ignore  []string           `yaml:"ignore"  json:"ignore"`
+	Where   map[string]string  `yaml:"where"   json:"where"`
 }
 
 // Rewrite rules for while dumping a database.

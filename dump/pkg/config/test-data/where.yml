@@ -1,0 +1,3 @@
+where:
+  some_table: |-
+    revision_id IN (SELECT revision_id FROM another_table)
