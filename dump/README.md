@@ -20,6 +20,11 @@ rewrite:
     mail: concat(uid, "@localhost")
     pass: '"password"'
 
+where:
+  # Only include body field data for current revisions.
+  node_revision__body: |-
+      revision_id IN (SELECT vid FROM node)
+
 nodata:
   - cache*
   - captcha_sessions
