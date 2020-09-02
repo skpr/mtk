@@ -71,7 +71,7 @@ $ export MTK_DUMP_DATABASE=test
 $ mtk-dump > db.sql
 ```
 
-### Package
+### Build
 
 ```bash
 $ docker run -it -v $HOME/.docker:/kaniko/.docker \
