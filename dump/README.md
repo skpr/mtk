@@ -53,3 +53,14 @@ $ export MTK_DUMP_DATABASE=test
 # Run the command!
 $ mtk-dump > sanitized.sql
 ```
+
+### Installation
+
+If you want a separate binary of mtk-dump, you'll need to:
+
+```
+$ cd dump
+$ make build
+```
+
+This will leave usable binaries in dump/bin
