@@ -43,7 +43,7 @@ ignore:
   - __ACQUIA_MONITORING__
 .......
 
-# Configure the command. NOTE: We also accept myqldump flags.
+# Configure the command. NOTE: We also accept mysqldump flags.
 $ export MTK_DUMP_CONFIG=mtk.yml
 $ export MTK_DUMP_HOSTNAME=127.0.0.1
 $ export MTK_DUMP_USERNAME=root
