@@ -8,7 +8,7 @@ Toolkit for exporting, sanitizing and packaging MySQL database.
 The following example scenario showcase multiple _mtk_ tools:
 
 * [dump](/dump)
-* [package](/package)
+* [build](/build)
 
 In the following scenario we will be dumping a sanitized version of the database and packaging the image into a container image which can then be consumed by developers using Docker Compose.
 
@@ -71,7 +71,7 @@ $ export MTK_DUMP_DATABASE=test
 $ mtk-dump > db.sql
 ```
 
-### Package
+### Build
 
 ```bash
 $ docker run -it -v $HOME/.docker:/kaniko/.docker \

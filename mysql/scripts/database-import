@@ -6,9 +6,7 @@ NAME=$3
 FILE=$4
 
 mysql-start &
-while ! nc -z 127.0.0.1 3306; do
-  sleep 0.1
-done
+wait-port 127.0.0.1 3306 100000
 
 database-create $NAME $FILE
 
