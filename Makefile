@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 IMAGE=skpr/mtk
-VERSION=$(shell git describe --tags --always)
+VERSION=1.x
 
 define build_image
 	docker build -t $(IMAGE)-${1}:$(VERSION) -t $(IMAGE)-${1}:latest ${1}
