@@ -19,16 +19,16 @@ endef
 build:
 	$(call build_image,build)
 	$(call build_image,mysql)
-	$(call build_image,dump)
+	$(call build_image,cli)
 
 test:
 	$(call test_image,build)
 	$(call test_image,mysql)
-	$(call test_image,dump)
+	$(call test_image,cli)
 
 push:
 	$(call push_image,build)
 	$(call push_image,mysql)
-	$(call push_image,dump)
+	$(call push_image,cli)
 
 .PHONY: *

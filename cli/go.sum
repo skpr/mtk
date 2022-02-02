@@ -18,6 +18,8 @@ github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINE
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/previousnext/mysql-toolkit v0.0.1 h1:pg4MphaiXa64l9PxlV1CYHmSwp45V0XWOrH0lP5NAA4=
+github.com/skpr/mysqlsuperdump v0.5.1 h1:3puf3FOlu1Y7xqTvq0jx6+L5aNtM0LH6S3NZ4oOc904=
+github.com/skpr/mysqlsuperdump v0.5.1/go.mod h1:/qK4NximpJ9y1Lfro1YEkbdqkbMXjLUsFbewidJ9wU8=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=

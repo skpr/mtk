@@ -6,7 +6,7 @@ import (
 	"github.com/gobwas/glob"
 	"github.com/pkg/errors"
 
-	"github.com/skpr/mtk/dump/internal/sliceutils"
+	"github.com/skpr/mtk/internal/sliceutils"
 )
 
 // ListTables based on a set of globs.

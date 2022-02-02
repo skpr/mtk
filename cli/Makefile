@@ -2,13 +2,13 @@
 
 export CGO_ENABLED=0
 
-PROJECT=github.com/skpr/mtk
+PROJECT=github.com/skpr/mtk/cmd/mtk
 VERSION=$(shell git describe --tags --always)
 COMMIT=$(shell git rev-list -1 HEAD)
 
 # Builds the project.
 define go_build
-	GOOS=${1} GOARCH=${2} go build -o bin/mtk-dump_${1}_${2} -ldflags='-extldflags "-static"' ${PROJECT}/dump
+	GOOS=${1} GOARCH=${2} go build -o bin/mtk-${1}_${2} -ldflags='-extldflags "-static"' ${PROJECT}
 endef
 
 # Builds the project.

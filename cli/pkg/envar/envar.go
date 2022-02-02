@@ -17,4 +17,6 @@ const (
 	Port = "MTK_DUMP_PORT"
 	// Database defines the environment variable when using the command line.
 	Database = "MTK_DUMP_DATABASE"
+	// Table defines the environment variable when using the command line.
+	Table = "MTK_DUMP_TABLE"
 )
