@@ -1,19 +1,25 @@
 #!/usr/bin/make -f
 
-IMAGE=skpr/mtk
-VERSION=1.x
+IMAGE_REPO_BASE=skpr/mtk
+ARCH=amd64
+VERSION_TAG=v2-latest
 
 define build_image
-	docker build -t $(IMAGE)-${1}:$(VERSION) -t $(IMAGE)-${1}:latest ${1}
+	docker build --build-arg ARCH=${ARCH} -t ${IMAGE_REPO_BASE}-${1}:${VERSION_TAG}-${ARCH} ${1}
 endef
 
 define test_image
-	container-structure-test test --image $(IMAGE)-${1}:${VERSION} --config ${1}/tests.yml
+	container-structure-test test --image ${IMAGE_REPO_BASE}-${1}:${VERSION_TAG}-${ARCH} --config ${1}/tests.yml
 endef
 
 define push_image
-	docker push $(IMAGE)-${1}:${VERSION}
-	docker push $(IMAGE)-${1}:latest
+	docker push ${IMAGE_REPO_BASE}-${1}:${VERSION_TAG}-${ARCH}
+endef
+
+define manifest
+	$(eval IMAGE=${IMAGE_REPO_BASE}-${1}:${VERSION_TAG})
+	docker manifest create ${IMAGE} --amend ${IMAGE}-arm64 --amend ${IMAGE}-amd64
+    docker manifest push ${IMAGE}
 endef
 
 build:
@@ -30,5 +36,10 @@ push:
 	$(call push_image,build)
 	$(call push_image,mysql)
 	$(call push_image,dump)
+
+manifest:
+	$(call manifest,build)
+	$(call manifest,mysql)
+	$(call manifest,dump)
 
 .PHONY: *
