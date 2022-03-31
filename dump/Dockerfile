@@ -1,6 +1,6 @@
 ARG ARCH=amd64
 ARG IMAGE_TAG=v2-latest-${ARCH}
-FROM golang:1.12 as build
+FROM golang:1.17 as build
 ARG ARCH
 ARG IMAGE_TAG
 
