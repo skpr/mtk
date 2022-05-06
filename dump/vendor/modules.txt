@@ -1,3 +1,5 @@
+# github.com/DATA-DOG/go-sqlmock v1.5.0
+github.com/DATA-DOG/go-sqlmock
 # github.com/alecthomas/kingpin v2.2.6+incompatible
 github.com/alecthomas/kingpin
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
@@ -7,26 +9,22 @@ github.com/alecthomas/template/parse
 github.com/alecthomas/units
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
-# github.com/go-sql-driver/mysql v1.4.1
+# github.com/go-sql-driver/mysql v1.6.0
 github.com/go-sql-driver/mysql
 # github.com/gobwas/glob v0.2.3
 github.com/gobwas/glob
 github.com/gobwas/glob/compiler
-github.com/gobwas/glob/syntax
 github.com/gobwas/glob/match
+github.com/gobwas/glob/syntax
 github.com/gobwas/glob/syntax/ast
-github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/syntax/lexer
+github.com/gobwas/glob/util/runes
 github.com/gobwas/glob/util/strings
-# github.com/hgfischer/mysqlsuperdump v0.5.0
-github.com/hgfischer/mysqlsuperdump/dumper
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/assert
-# google.golang.org/appengine v1.6.1
-google.golang.org/appengine/cloudsql
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
