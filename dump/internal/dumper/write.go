@@ -11,30 +11,30 @@ import (
 // WriteHeader is intended to be added at the beginning of a dump to manage database configuration.
 // @todo, This header was taken from a mariadb mysqldump command. We need to determine if utf8mb4 should be configurable.
 func (d *Client) WriteHeader(w io.Writer) error {
-	header := `SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT;
-SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS;
-SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION;
-SET NAMES utf8mb4;
-SET @OLD_TIME_ZONE=@@TIME_ZONE;
-SET TIME_ZONE='+00:00';
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO';
-SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0;`
+	header := `/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;`
 	_, err := fmt.Fprintln(w, header)
 	return err
 }
 
 // WriteFooter is intended to be added at the end of a dump to manage database configuration.
 func (d *Client) WriteFooter(w io.Writer) error {
-	footer := `SET TIME_ZONE=@OLD_TIME_ZONE;
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT;
-SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS;
-SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION;
-SET SQL_NOTES=@OLD_SQL_NOTES;`
+	footer := `/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;`
 	_, err := fmt.Fprintln(w, footer)
 	return err
 }
@@ -52,12 +52,12 @@ func (d *Client) WriteTableLockWrite(w io.Writer, table string) {
 
 // WriteTableDisableKeys to be used for a dump script.
 func (d *Client) WriteTableDisableKeys(w io.Writer, table string) {
-	fmt.Fprintf(w, "ALTER TABLE `%s` DISABLE KEYS;\n", table)
+	fmt.Fprintf(w, "/*!40000 ALTER TABLE `%s` DISABLE KEYS */;\n", table)
 }
 
 // WriteTableEnableKeys to be used for a dump script.
 func (d *Client) WriteTableEnableKeys(w io.Writer, table string) {
-	fmt.Fprintf(w, "ALTER TABLE `%s` ENABLE KEYS;\n", table)
+	fmt.Fprintf(w, "/*!40000 ALTER TABLE `%s` ENABLE KEYS */;\n", table)
 }
 
 // WriteUnlockTables to be used for a dump script.
@@ -67,11 +67,13 @@ func (d *Client) WriteUnlockTables(w io.Writer) {
 
 // WriteCreateTable script used when dumping a database.
 func (d *Client) WriteCreateTable(w io.Writer, table string) error {
+	d.Logger.Println("Dumping structure for table:", table)
+
 	fmt.Fprintf(w, "\n--\n-- Structure for table `%s`\n--\n\n", table)
 	fmt.Fprintf(w, "DROP TABLE IF EXISTS `%s`;\n", table)
 
-	fmt.Fprintln(w, "SET @saved_cs_client = @@character_set_client;")
-	fmt.Fprintln(w, "SET character_set_client = utf8;")
+	fmt.Fprintln(w, "/*!40101 SET @saved_cs_client = @@character_set_client */;")
+	fmt.Fprintln(w, "/*!40101 SET character_set_client = utf8 */;")
 
 	row := d.DB.QueryRow(fmt.Sprintf("SHOW CREATE TABLE `%s`", table))
 
@@ -83,7 +85,7 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 
 	fmt.Fprintf(w, "%s;\n", ddl)
 
-	fmt.Fprintln(w, "SET character_set_client = @saved_cs_client;")
+	fmt.Fprintln(w, "/*!40101 SET character_set_client = @saved_cs_client */;")
 
 	return nil
 }
@@ -104,6 +106,8 @@ func (d *Client) WriteTableHeader(w io.Writer, table string) (uint64, error) {
 
 // WriteTableData for a specific table.
 func (d *Client) WriteTableData(w io.Writer, table string) error {
+	d.Logger.Println("Dumping data for table:", table)
+
 	rows, columns, err := d.selectAllDataForTable(table)
 	if err != nil {
 		return err
@@ -188,27 +192,22 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 
 	d.WriteCreateTable(w, table)
 
+	cnt, err := d.WriteTableHeader(w, table)
+	if err != nil {
+		return err
+	}
+
+	d.WriteTableLockWrite(w, table)
+	d.WriteTableDisableKeys(w, table)
+
 	if !skipData {
-		cnt, err := d.WriteTableHeader(w, table)
-		if err != nil {
-			return err
-		}
-
 		if cnt > 0 {
-			d.WriteTableLockWrite(w, table)
-			d.WriteTableDisableKeys(w, table)
 			d.WriteTableData(w, table)
-
-			fmt.Fprintln(w)
-
-			d.WriteTableEnableKeys(w, table)
-			d.WriteUnlockTables(w)
-
-			if d.UseTableLock {
-				d.UnlockTables()
-			}
 		}
 	}
+
+	d.WriteTableEnableKeys(w, table)
+	d.WriteUnlockTables(w)
 
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 )
 
 // ExtendedInsertDefaultRowCount: Default rows that will be dumped by each INSERT statement
@@ -24,14 +25,16 @@ type Client struct {
 	WhereMap           map[string]string
 	FilterMap          map[string]string
 	UseTableLock       bool
+	Logger             *log.Logger
 	ExtendedInsertRows int
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB) *Client {
+func NewClient(db *sql.DB, logger *log.Logger) *Client {
 	return &Client{
 		DB:                 db,
 		ExtendedInsertRows: DefaultExtendedInsertRows,
+		Logger:             logger,
 	}
 }
 

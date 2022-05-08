@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/alecthomas/kingpin"
@@ -55,7 +56,7 @@ func main() {
 
 //
 func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
-	d := dumper.NewClient(db)
+	d := dumper.NewClient(db, log.New(stderr, "", 0))
 
 	// Get a list of tables to nodata, passed through a globber.
 	nodata, err := dbutils.ListTables(db, cfg.NoData)
