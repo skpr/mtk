@@ -3,6 +3,8 @@ package dumper
 import (
 	"bytes"
 	"errors"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,7 +16,7 @@ import (
 
 func TestMySQLDumpTableHeader(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
 	buffer := bytes.NewBuffer(make([]byte, 0))
@@ -27,7 +29,7 @@ func TestMySQLDumpTableHeader(t *testing.T) {
 
 func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))
 	buffer := bytes.NewBuffer(make([]byte, 0))
@@ -38,14 +40,14 @@ func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 
 func TestMySQLDumpTableLockWrite(t *testing.T) {
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(nil)
+	dumper := NewClient(nil, log.New(os.Stdout, "", 0))
 	dumper.WriteTableLockWrite(buffer, "table")
 	assert.Contains(t, buffer.String(), "LOCK TABLES `table` WRITE;")
 }
 
 func TestMySQLDumpUnlockTables(t *testing.T) {
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(nil)
+	dumper := NewClient(nil, log.New(os.Stdout, "", 0))
 	dumper.WriteUnlockTables(buffer)
 	assert.Contains(t, buffer.String(), "UNLOCK TABLES;")
 }
@@ -53,7 +55,7 @@ func TestMySQLDumpUnlockTables(t *testing.T) {
 func TestMySQLDumpTableData(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.ExtendedInsertRows = 2
 
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
@@ -83,7 +85,7 @@ func TestMySQLDumpTableData(t *testing.T) {
 func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	error := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
 	assert.Equal(t, error, dumper.WriteTableData(buffer, "table"))

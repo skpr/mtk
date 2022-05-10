@@ -45,6 +45,16 @@ func (d *Client) WriteDumpCompleted(w io.Writer) error {
 	return err
 }
 
+// WriteAutoCommitOff to be used for a dump script.
+func (d *Client) WriteAutoCommitOff(w io.Writer) {
+	fmt.Fprintln(w, "set autocommit=0;")
+}
+
+// WriteCommit to be used for a dump script.
+func (d *Client) WriteCommit(w io.Writer) {
+	fmt.Fprintln(w, "commit;")
+}
+
 // WriteTableLockWrite to be used for a dump script.
 func (d *Client) WriteTableLockWrite(w io.Writer, table string) {
 	fmt.Fprintf(w, "LOCK TABLES `%s` WRITE;\n", table)
@@ -72,7 +82,7 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 	fmt.Fprintf(w, "\n--\n-- Structure for table `%s`\n--\n\n", table)
 	fmt.Fprintf(w, "DROP TABLE IF EXISTS `%s`;\n", table)
 
-	fmt.Fprintln(w, "/*!40101 SET @saved_cs_client = @@character_set_client */;")
+	fmt.Fprintln(w, "/*!40101 SET @saved_cs_client     = @@character_set_client */;")
 	fmt.Fprintln(w, "/*!40101 SET character_set_client = utf8 */;")
 
 	row := d.DB.QueryRow(fmt.Sprintf("SHOW CREATE TABLE `%s`", table))
@@ -137,7 +147,7 @@ func (d *Client) WriteTableData(w io.Writer, table string) error {
 			val := "NULL"
 
 			if col != nil {
-				val = fmt.Sprintf("'%s'", escape(string(*col)))
+				val = getValue(string(*col))
 			}
 
 			vals = append(vals, val)
@@ -192,22 +202,26 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 
 	d.WriteCreateTable(w, table)
 
+	if skipData {
+		return nil
+	}
+
 	cnt, err := d.WriteTableHeader(w, table)
 	if err != nil {
 		return err
 	}
 
-	d.WriteTableLockWrite(w, table)
-	d.WriteTableDisableKeys(w, table)
-
-	if !skipData {
-		if cnt > 0 {
-			d.WriteTableData(w, table)
-		}
+	if cnt == 0 {
+		return nil
 	}
 
+	d.WriteTableLockWrite(w, table)
+	d.WriteTableDisableKeys(w, table)
+	d.WriteAutoCommitOff(w)
+	d.WriteTableData(w, table)
 	d.WriteTableEnableKeys(w, table)
 	d.WriteUnlockTables(w)
+	d.WriteCommit(w)
 
 	return nil
 }

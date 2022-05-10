@@ -3,6 +3,8 @@ package dumper
 import (
 	"bytes"
 	"errors"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -13,7 +15,7 @@ import (
 
 func TestMySQLFlushTable(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectExec("FLUSH TABLES `table`").WillReturnResult(sqlmock.NewResult(0, 1))
 	_, err := dumper.FlushTable("table")
 	assert.Nil(t, err)
@@ -21,7 +23,7 @@ func TestMySQLFlushTable(t *testing.T) {
 
 func TestMySQLUnlockTables(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectExec("UNLOCK TABLES").WillReturnResult(sqlmock.NewResult(0, 1))
 	_, err := dumper.UnlockTables()
 	assert.Nil(t, err)
@@ -29,7 +31,7 @@ func TestMySQLUnlockTables(t *testing.T) {
 
 func TestMySQLQueryTables(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SHOW FULL TABLES").WillReturnRows(
 		sqlmock.NewRows([]string{"Tables_in_database", "Table_type"}).
 			AddRow("table1", "BASE TABLE").
@@ -42,7 +44,7 @@ func TestMySQLQueryTables(t *testing.T) {
 
 func TestMySQLLockTableRead(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectExec("LOCK TABLES `table` READ").WillReturnResult(sqlmock.NewResult(0, 1))
 	_, err := dumper.LockTableReading("table")
 	assert.Nil(t, err)
@@ -50,7 +52,7 @@ func TestMySQLLockTableRead(t *testing.T) {
 
 func TestMySQLGetTablesHandlingErrorWhenListingTables(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	expectedErr := errors.New("broken")
 	mock.ExpectQuery("SHOW FULL TABLES").WillReturnError(expectedErr)
 	tables, err := dumper.QueryTables()
@@ -60,7 +62,7 @@ func TestMySQLGetTablesHandlingErrorWhenListingTables(t *testing.T) {
 
 func TestMySQLGetTablesHandlingErrorWhenScanningRow(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SHOW FULL TABLES").WillReturnRows(
 		sqlmock.NewRows([]string{"Tables_in_database", "Table_type"}).AddRow(1, nil))
 	tables, err := dumper.QueryTables()
@@ -75,7 +77,7 @@ func TestMySQLDumpCreateTable(t *testing.T) {
 		"PRIMARY KEY (`id`), KEY `idx_name` (`name`) " +
 		") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SHOW CREATE TABLE `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"Table", "Create Table"}).
 			AddRow("table", ddl),
@@ -88,7 +90,7 @@ func TestMySQLDumpCreateTable(t *testing.T) {
 
 func TestMySQLDumpCreateTableHandlingErrorWhenScanningRows(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SHOW CREATE TABLE `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"Table", "Create Table"}).AddRow("table", nil))
 	buffer := bytes.NewBuffer(make([]byte, 0))
@@ -97,7 +99,7 @@ func TestMySQLDumpCreateTableHandlingErrorWhenScanningRows(t *testing.T) {
 
 func TestMySQLGetColumnsForSelect(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.SelectMap = map[string]map[string]string{"table": {"col2": "NOW()"}}
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"col1", "col2", "col3"}).AddRow("a", "b", "c"))
@@ -108,7 +110,7 @@ func TestMySQLGetColumnsForSelect(t *testing.T) {
 
 func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.SelectMap = map[string]map[string]string{"table": {"col2": "NOW()"}}
 	error := errors.New("broken")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
@@ -119,7 +121,7 @@ func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 
 func TestMySQLGetSelectQueryFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.SelectMap = map[string]map[string]string{"table": {"c2": "NOW()"}}
 	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
@@ -131,7 +133,7 @@ func TestMySQLGetSelectQueryFor(t *testing.T) {
 
 func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.SelectMap = map[string]map[string]string{"table": {"c2": "NOW()"}}
 	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	error := errors.New("broken")
@@ -143,7 +145,7 @@ func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 
 func TestMySQLGetRowCount(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table` WHERE c1 > 0").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
@@ -154,7 +156,7 @@ func TestMySQLGetRowCount(t *testing.T) {
 
 func TestMySQLGetRowCountHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table` WHERE c1 > 0").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))

@@ -2,8 +2,22 @@ package dumper
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/asaskevich/govalidator"
 	"io"
 )
+
+func getValue(raw string) string {
+	if raw == "" {
+		return "''"
+	}
+
+	if govalidator.IsInt(raw) {
+		return fmt.Sprintf("%s", escape(raw))
+	}
+
+	return fmt.Sprintf("'%s'", escape(raw))
+}
 
 func escape(str string) string {
 	var esc string

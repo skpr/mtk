@@ -7,6 +7,8 @@ github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4
 github.com/alecthomas/units
+# github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
+github.com/asaskevich/govalidator
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
 # github.com/go-sql-driver/mysql v1.6.0
