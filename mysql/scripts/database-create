@@ -8,3 +8,6 @@ mysql -u mysql -e "CREATE DATABASE ${NAME}"
 
 echo "Importing database ${NAME} from ${FILE} ..."
 mysql -u mysql -D ${NAME} < ${FILE}
+
+echo "Analyzing databases..."
+mysqlcheck --auto-repair --analyze ${NAME}
