@@ -3,8 +3,9 @@ package dumper
 import (
 	"bytes"
 	"fmt"
-	"github.com/asaskevich/govalidator"
 	"io"
+
+	"github.com/asaskevich/govalidator"
 )
 
 func getValue(raw string) string {
