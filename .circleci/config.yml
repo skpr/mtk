@@ -28,7 +28,7 @@ workflows:
           requires: [ build ]
           filters:
             branches:
-              only: [ master, multiarch ]
+              only: [ master ]
 
   nightly:
     jobs:
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: Get SHA1 version
           command: |
-            SHA1_VERSION="v2-$(git rev-parse --short HEAD)"
+            SHA1_VERSION="v3-$(git rev-parse --short HEAD)"
             echo 'export SHA1_VERSION=$SHA1_VERSION' >> $BASH_ENV
       - run:
           name: "Install: Container Structure Tests"
@@ -75,8 +75,8 @@ jobs:
       - run:
           name: Build, Test and Release
           command: |
-            SHA1_VERSION="v2-$(git rev-parse --short HEAD)"
-            make build ARCH=<< parameters.executor >> VERSION_TAG=v2-latest
+            SHA1_VERSION="v3-$(git rev-parse --short HEAD)"
+            make build ARCH=<< parameters.executor >> VERSION_TAG=v3-latest
             make build ARCH=<< parameters.executor >> VERSION_TAG=${SHA1_VERSION}
       - when:
           condition:
@@ -88,8 +88,8 @@ jobs:
                 name: "Push image"
                 command: |
                   echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                  SHA1_VERSION="v2-$(git rev-parse --short HEAD)"
-                  make push ARCH=<< parameters.executor >> VERSION_TAG=v2-latest
+                  SHA1_VERSION="v3-$(git rev-parse --short HEAD)"
+                  make push ARCH=<< parameters.executor >> VERSION_TAG=v3-latest
                   make push ARCH=<< parameters.executor >> VERSION_TAG=${SHA1_VERSION}
 
   manifest:
@@ -105,6 +105,6 @@ jobs:
           command: |
             export DOCKER_CLI_EXPERIMENTAL=enabled
             echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            SHA1_VERSION="v2-$(git rev-parse --short HEAD)"
-            make manifest VERSION_TAG=v2-latest
+            SHA1_VERSION="v3-$(git rev-parse --short HEAD)"
+            make manifest VERSION_TAG=v3-latest
             make manifest VERSION_TAG=${SHA1_VERSION}
