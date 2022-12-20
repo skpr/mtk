@@ -9,9 +9,9 @@ import (
 
 	"github.com/alecthomas/kingpin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/hgfischer/mysqlsuperdump/dumper"
 
 	"github.com/skpr/mtk/dump/internal/dbutils"
+	"github.com/skpr/mtk/dump/internal/dumper"
 	"github.com/skpr/mtk/dump/pkg/config"
 	"github.com/skpr/mtk/dump/pkg/envar"
 )
@@ -56,9 +56,7 @@ func main() {
 
 //
 func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
-	logger := log.New(stderr, "", 0)
-
-	d := dumper.NewMySQLDumper(db, logger)
+	d := dumper.NewClient(db, log.New(stderr, "", 0))
 
 	// Get a list of tables to nodata, passed through a globber.
 	nodata, err := dbutils.ListTables(db, cfg.NoData)
@@ -91,5 +89,5 @@ func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	// Assign conditional row rules to the dumper.
 	d.WhereMap = cfg.WhereMap()
 
-	return d.Dump(stdout)
+	return d.DumpTables(stdout)
 }

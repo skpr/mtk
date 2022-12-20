@@ -14,7 +14,9 @@ endef
 # Builds the project.
 build:
 	$(call go_build,linux,amd64)
+	$(call go_build,linux,arm64)
 	$(call go_build,darwin,amd64)
+	$(call go_build,darwin,arm64)
 
 # Run all lint checking with exit codes for CI.
 lint:
