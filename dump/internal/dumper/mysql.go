@@ -7,8 +7,8 @@ import (
 )
 
 // QueryTables will return a list of tables.
-func (d *Client) QueryTables() ([]string, error) {
-	tables := make([]string, 0)
+func (d *Client) QueryTables() ([]Table, error) {
+	var tables []Table
 
 	rows, err := d.DB.Query("SHOW FULL TABLES")
 	if err != nil {
@@ -25,8 +25,17 @@ func (d *Client) QueryTables() ([]string, error) {
 			return tables, err
 		}
 
-		if tableType == "BASE TABLE" {
-			tables = append(tables, tableName)
+		switch tableType {
+		case string(TypeTableBase):
+			tables = append(tables, Table{
+				Name: tableName,
+				Type: TypeTableBase,
+			})
+		case string(TypeTableView):
+			tables = append(tables, Table{
+				Name: tableName,
+				Type: TypeTableView,
+			})
 		}
 	}
 

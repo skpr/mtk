@@ -100,6 +100,33 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 	return nil
 }
 
+// WriteCreateView script used when dumping a database.
+func (d *Client) WriteCreateView(w io.Writer, view string) error {
+	d.Logger.Println("Dumping create statement for view:", view)
+
+	fmt.Fprintf(w, "\n--\n-- Temporary table structure for view `%s`\n--\n\n", view)
+
+	fmt.Fprintf(w, "DROP TABLE IF EXISTS `%s`;\n", view)
+	fmt.Fprintf(w, "/*!50001 DROP VIEW IF EXISTS `%s`*/;\n", view)
+
+	fmt.Fprintln(w, "/*!40101 SET @saved_cs_client     = @@character_set_client */;")
+	fmt.Fprintln(w, "/*!40101 SET character_set_client = utf8 */;")
+
+	row := d.DB.QueryRow(fmt.Sprintf("SHOW CREATE VIEW `%s`", view))
+
+	var name, ddl string
+
+	if err := row.Scan(&name, &ddl); err != nil {
+		return err
+	}
+
+	fmt.Fprintf(w, "/*!50001 %s */;\n", ddl)
+
+	fmt.Fprintln(w, "/*!40101 SET character_set_client = @saved_cs_client */;")
+
+	return nil
+}
+
 // WriteTableHeader which contains debug information.
 func (d *Client) WriteTableHeader(w io.Writer, table string) (uint64, error) {
 	fmt.Fprintf(w, "\n--\n-- Data for table `%s`", table)
@@ -189,24 +216,28 @@ func (d *Client) writeTables(w io.Writer) error {
 }
 
 // WriteTable allows for a single table dump script.
-func (d *Client) writeTable(w io.Writer, table string) error {
-	if d.FilterMap[strings.ToLower(table)] == OperationIgnore {
+func (d *Client) writeTable(w io.Writer, table Table) error {
+	if d.FilterMap[strings.ToLower(table.Name)] == OperationIgnore {
 		return nil
 	}
 
-	skipData := d.FilterMap[strings.ToLower(table)] == OperationNoData
-	if !skipData && d.UseTableLock {
-		d.LockTableReading(table)
-		d.FlushTable(table)
+	if table.Type == TypeTableView {
+		return d.WriteCreateView(w, table.Name)
 	}
 
-	d.WriteCreateTable(w, table)
+	skipData := d.FilterMap[strings.ToLower(table.Name)] == OperationNoData
+	if !skipData && d.UseTableLock {
+		d.LockTableReading(table.Name)
+		d.FlushTable(table.Name)
+	}
+
+	d.WriteCreateTable(w, table.Name)
 
 	if skipData {
 		return nil
 	}
 
-	cnt, err := d.WriteTableHeader(w, table)
+	cnt, err := d.WriteTableHeader(w, table.Name)
 	if err != nil {
 		return err
 	}
@@ -215,11 +246,11 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 		return nil
 	}
 
-	d.WriteTableLockWrite(w, table)
-	d.WriteTableDisableKeys(w, table)
+	d.WriteTableLockWrite(w, table.Name)
+	d.WriteTableDisableKeys(w, table.Name)
 	d.WriteAutoCommitOff(w)
-	d.WriteTableData(w, table)
-	d.WriteTableEnableKeys(w, table)
+	d.WriteTableData(w, table.Name)
+	d.WriteTableEnableKeys(w, table.Name)
 	d.WriteUnlockTables(w)
 	d.WriteCommit(w)
 
