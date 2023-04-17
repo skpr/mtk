@@ -114,9 +114,9 @@ func (d *Client) WriteCreateView(w io.Writer, view string) error {
 
 	row := d.DB.QueryRow(fmt.Sprintf("SHOW CREATE VIEW `%s`", view))
 
-	var name, ddl string
+	var name, ddl, charset, collation string
 
-	if err := row.Scan(&name, &ddl); err != nil {
+	if err := row.Scan(&name, &ddl, &charset, &collation); err != nil {
 		return err
 	}
 
@@ -213,6 +213,24 @@ func (d *Client) writeTables(w io.Writer) error {
 	}
 
 	return nil
+}
+
+// Helper function to get a table and it's type based on the name.
+func (d *Client) getTable(w io.Writer, name string) (Table, error) {
+	var table Table
+
+	tables, err := d.QueryTables()
+	if err != nil {
+		return table, err
+	}
+
+	for _, table := range tables {
+		if table.Name == name {
+			return table, nil
+		}
+	}
+
+	return table, nil
 }
 
 // WriteTable allows for a single table dump script.

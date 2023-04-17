@@ -3,6 +3,7 @@ package dumper
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -89,4 +90,22 @@ func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	error := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
 	assert.Equal(t, error, dumper.WriteTableData(buffer, "table"))
+}
+
+func TestWriteCreateView(t *testing.T) {
+	db, mock := mock.GetDB(t)
+	buffer := bytes.NewBuffer(make([]byte, 0))
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
+
+	mock.ExpectQuery("SHOW CREATE VIEW `table`").WillReturnRows(
+		sqlmock.NewRows([]string{"View", "Create View", "character_set_client", "collation_connection"}).
+			AddRow(1, "CREATE VIEW test.v AS SELECT * FROM t;", "utf8mb4", "utf8mb4_0900_ai_ci"))
+
+	err := dumper.WriteCreateView(buffer, "table")
+	assert.NoError(t, err)
+
+	want, err := os.ReadFile("testdata/view.sql")
+	assert.NoError(t, err)
+
+	assert.Equal(t, fmt.Sprintf("\n%s\n", want), buffer.String())
 }

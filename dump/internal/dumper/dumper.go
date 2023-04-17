@@ -60,9 +60,14 @@ func (d *Client) DumpTables(w io.Writer) error {
 }
 
 // DumpTable is convenient if you wish to coordinate a dump eg. Single file per table.
-func (d *Client) DumpTable(w io.Writer, table string) error {
+func (d *Client) DumpTable(w io.Writer, name string) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
+	}
+
+	table, err := d.getTable(w, name)
+	if err != nil {
+		return fmt.Errorf("failed to get table: %s: %w", name, err)
 	}
 
 	if err := d.writeTable(w, table); err != nil {
