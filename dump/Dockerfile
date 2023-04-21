@@ -10,7 +10,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} go build -a -o bin/mtk-dump github.c
 
 FROM skpr/mtk-mysql:${IMAGE_TAG}
 USER root
-
 RUN apt-get update \
     && apt-get install -y \
       bash \
@@ -18,7 +17,6 @@ RUN apt-get update \
     && apt-get clean \
     && rm -Rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man
-
 COPY --from=build /go/src/github.com/skpr/mtk/dump/bin/mtk-dump /usr/local/bin/mtk-dump
 ADD scripts/database-sanitize /usr/local/bin/database-sanitize
 RUN chmod +x /usr/local/bin/database-sanitize
