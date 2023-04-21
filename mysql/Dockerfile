@@ -11,6 +11,8 @@ RUN apt-get update \
 
 ADD my.cnf /etc/my.cnf
 
+RUN mysqld --initialize --user=mysql --basedir=/opt/mysql/mysql --datadir=/var/lib/mysql/data
+
 RUN mkdir -p /run/mysqld && \
     chown mysql:mysql /run/mysqld
 VOLUME /run/mysqld
