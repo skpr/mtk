@@ -11,8 +11,6 @@ RUN apt-get update \
 
 ADD my.cnf /etc/my.cnf
 
-RUN #mysql_secure_installation --user=mysql --datadir=/var/lib/mysql
-
 RUN mkdir -p /run/mysqld && \
     chown mysql:mysql /run/mysqld
 VOLUME /run/mysqld
