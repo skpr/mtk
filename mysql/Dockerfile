@@ -1,12 +1,17 @@
-FROM alpine:3.15
+FROM ubuntu:22.04
 
-RUN apk add bash \
-            mariadb \
-            mariadb-client
+RUN apt-get update \
+    && apt-get install -y \
+      bash \
+      mysql-client \
+      mysql-server \
+    && apt-get clean \
+    && rm -Rf /var/lib/apt/lists/* \
+    && rm -Rf /usr/share/doc && rm -Rf /usr/share/man
 
-ADD my.cnf /etc/my.cnf.d/mariadb-server.cnf
+ADD my.cnf /etc/my.cnf
 
-RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql
+RUN #mysql_secure_installation --user=mysql --datadir=/var/lib/mysql
 
 RUN mkdir -p /run/mysqld && \
     chown mysql:mysql /run/mysqld
@@ -20,3 +25,5 @@ ENV MYSQL_TCP_PORT=3306
 USER mysql
 
 CMD ["/usr/local/bin/mysql-start"]
+
+RUN mysqld --validate-config
