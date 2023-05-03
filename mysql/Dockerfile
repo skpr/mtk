@@ -1,7 +1,11 @@
 FROM ubuntu:22.04
 
+ENV TZ=Etc/UTC
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get -y install \
+      tzdata \
       bash \
       mysql-client \
       mysql-server \
@@ -9,9 +13,13 @@ RUN apt-get update \
     && rm -Rf /var/lib/apt/lists/* \
     && rm -Rf /usr/share/doc && rm -Rf /usr/share/man
 
-ADD my.cnf /etc/my.cnf
-
-RUN mysqld --initialize --user=mysql --basedir=/opt/mysql/mysql --datadir=/var/lib/mysql/data
+RUN mkdir -p /opt/mysql/mysql
+ADD my.cnf /opt/mysql/mysql/etc/my.cnf
+RUN mysqld \
+      --initialize \
+      --user=mysql  \
+      --basedir=/opt/mysql/mysql  \
+      --datadir=/opt/mysql/mysql/data
 
 RUN mkdir -p /run/mysqld && \
     chown mysql:mysql /run/mysqld
