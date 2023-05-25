@@ -6,5 +6,5 @@ PASS=$3
 
 echo "Creating user..."
 
-mysql -u mysql -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASS}';"
-mysql -u mysql -e "GRANT ALL PRIVILEGES ON ${NAME}.* TO '${USER}'@'%' IDENTIFIED BY '${PASS}';"
+mysql -uroot -proot -e "CREATE USER '${USER}'@'%' IDENTIFIED BY '${PASS}';"
+mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON ${NAME}.* TO '${USER}'@'%' IDENTIFIED BY '${PASS}';"
