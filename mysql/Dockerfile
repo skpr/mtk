@@ -8,8 +8,7 @@ RUN groupadd -r mysql && \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       netcat \
-      gnupg && \
-    rm -rf /var/lib/apt/lists/*
+      gnupg
 
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com --recv-keys 859BE8D7C586F538430B19C2467B942D3A79BD29 && \
     echo "deb http://repo.mysql.com/apt/debian/ bullseye mysql-8.0" | tee -a /etc/apt/sources.list.d/mysql.list
