@@ -3,12 +3,12 @@ version: 2.1
 executors:
   amd64:
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:2023.04.2
     resource_class: medium
 
   arm64:
     machine:
-      image: ubuntu-2004:202111-02
+      image: ubuntu-2204:2023.04.2
     resource_class: arm.medium
 
 platforms: &platforms
