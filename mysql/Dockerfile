@@ -21,7 +21,7 @@ RUN { \
 } | debconf-set-selections && \
     apt-get update && \
     apt-get install -y \
-      mysql-community-client \
+      mysql-client \
       mysql-community-server && \
     rm -rf /var/lib/apt/lists/*
 
