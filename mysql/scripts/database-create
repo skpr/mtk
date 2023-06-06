@@ -10,4 +10,4 @@ echo "Importing database ${NAME} from ${FILE} ..."
 mysql -uroot -proot -D ${NAME} < ${FILE}
 
 echo "Analyzing databases..."
-mysqlcheck --auto-repair --analyze ${NAME}
+mysqlcheck -uroot -proot --auto-repair --analyze ${NAME}

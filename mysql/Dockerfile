@@ -11,10 +11,8 @@ RUN apt-get update && \
       gnupg
 
 RUN { \
-  echo mysql-community-server mysql-community-server/data-dir select ''; \
-  echo mysql-community-server mysql-community-server/root-pass password 'root'; \
-  echo mysql-community-server mysql-community-server/re-root-pass password 'root'; \
-  echo mysql-community-server mysql-community-server/remove-test-db select false; \
+  echo mysql-server mysql-server/root_password password 'root'; \
+  echo mysql-server mysql-server/root_password_again password 'root'; \
 } | debconf-set-selections && \
     apt-get update && \
     apt-get install -y \
