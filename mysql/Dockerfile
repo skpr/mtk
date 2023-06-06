@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -10,9 +10,6 @@ RUN apt-get update && \
       netcat \
       gnupg
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com --recv-keys 859BE8D7C586F538430B19C2467B942D3A79BD29 && \
-    echo "deb http://repo.mysql.com/apt/debian/ bullseye mysql-8.0" | tee -a /etc/apt/sources.list.d/mysql.list
-
 RUN { \
   echo mysql-community-server mysql-community-server/data-dir select ''; \
   echo mysql-community-server mysql-community-server/root-pass password 'root'; \
@@ -22,7 +19,7 @@ RUN { \
     apt-get update && \
     apt-get install -y \
       mysql-client \
-      mysql-community-server && \
+      mysql-server && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /run/mysqld && \
