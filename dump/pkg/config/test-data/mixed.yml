@@ -8,3 +8,5 @@ rewrite:
 where:
   corge: |-
     grault IN (SELECT garply FROM waldo)
+  fred_*: |-
+    plugh >= 1000
