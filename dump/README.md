@@ -24,6 +24,9 @@ where:
   # Only include body field data for current revisions.
   node_revision__body: |-
       revision_id IN (SELECT vid FROM node)
+  # Use globbing on where config.
+  media_revision__*: |-
+    revision_id IN (SELECT vid FROM media)
 
 nodata:
   - cache*
