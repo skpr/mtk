@@ -39,7 +39,7 @@ func TestLoad(t *testing.T) {
 			Rules{
 				Rewrite: map[string]Rewrite{
 					"accounts": map[string]string{
-						"email": "concat(id, \"@sanitized\")",
+						"email":    "concat(id, \"@sanitized\")",
 						"password": "\"SANITIZED_PASSWORD\"",
 					},
 				},
@@ -51,6 +51,7 @@ func TestLoad(t *testing.T) {
 			Rules{
 				Where: map[string]string{
 					"some_table": "revision_id IN (SELECT revision_id FROM another_table)",
+					"fred_*":     "plugh >= 1000",
 				},
 			},
 		},
@@ -66,7 +67,8 @@ func TestLoad(t *testing.T) {
 					},
 				},
 				Where: map[string]string{
-					"corge": "grault IN (SELECT garply FROM waldo)",
+					"corge":  "grault IN (SELECT garply FROM waldo)",
+					"fred_*": "plugh >= 1000",
 				},
 			},
 		},

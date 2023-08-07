@@ -54,7 +54,6 @@ func main() {
 	}
 }
 
-//
 func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	d := dumper.NewClient(db, log.New(stderr, "", 0))
 
@@ -86,8 +85,18 @@ func dump(stdout, stderr io.Writer, db *sql.DB, cfg config.Rules) error {
 	// Assign our sanitization rules to the dumper.
 	d.SelectMap = cfg.SanitizeMap()
 
-	// Assign conditional row rules to the dumper.
-	d.WhereMap = cfg.WhereMap()
+	// Assign conditional row rules to the dumper, passed through a globber.
+	where := make(map[string]string, 0)
+	for glob, condition := range cfg.WhereMap() {
+		tables, err := dbutils.ListTables(db, []string{glob})
+		if err != nil {
+			return err
+		}
+		for _, table := range tables {
+			where[table] = condition
+		}
+	}
+	d.WhereMap = where
 
 	return d.DumpTables(stdout)
 }
