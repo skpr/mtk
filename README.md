@@ -1,7 +1,7 @@
-MySQL Toolkit
-=============
+MTK (MySQL Toolkit)
+===================
 
-Toolkit for exporting, sanitizing and packaging MySQL database.
+A toolkit for exporting, sanitizing and packaging MySQL database.
 
 ## The Goal of this Project
 
