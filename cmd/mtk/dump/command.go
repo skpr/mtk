@@ -28,7 +28,7 @@ const cmdExample = `
   mtk dump <database> --config <config file> > test.sql
 
   # List all database tables and dump each table to a file.
-  mtk list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
+  mtk table list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
 
 // Options is the commandline options for 'config' sub command
 type Options struct {

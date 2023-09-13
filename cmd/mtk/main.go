@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/cmd/mtk/dump"
-	"github.com/skpr/mtk/cmd/mtk/list"
+	"github.com/skpr/mtk/cmd/mtk/table"
 	"github.com/skpr/mtk/internal/mysql"
 	"github.com/skpr/mtk/pkg/envar"
 )
@@ -23,11 +23,11 @@ const cmdExample = `
   export MTK_PASSWORD=test
   export MTK_CONFIG=config.yml
 
-  # List all database tables.
-  mtk list <database>
-
   # Dump all database tables.
   mtk dump <database> > test.sql
+
+  # List all database tables.
+  mtk table list <database>
 `
 
 var cmd = &cobra.Command{
@@ -68,8 +68,8 @@ func main() {
 	usageTemplate = re.ReplaceAllLiteralString(usageTemplate, `{{StyleHeading "Flags:"}}`)
 	cmd.SetUsageTemplate(usageTemplate)
 
-	cmd.AddCommand(list.NewCommand(conn))
 	cmd.AddCommand(dump.NewCommand(conn))
+	cmd.AddCommand(table.NewCommand(conn))
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Println(err)

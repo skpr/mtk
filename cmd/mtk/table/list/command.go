@@ -24,13 +24,13 @@ const cmdExample = `
   export MTK_PASSWORD=test
 
   # List all database tables.
-  mtk list <database>
+  mtk table list <database>
 
   # List all database tables using config file to skip certain tables.
-  mtk list <database> --config <config file>
+  mtk table list <database> --config <config file>
 
   # List all database tables and dump each table to a file.
-  mtk list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
+  mtk table list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
 
 // Options is the commandline options for 'config' sub command
 type Options struct {
