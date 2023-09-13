@@ -8,22 +8,30 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-func getValue(raw string) string {
+func getValue(raw string) (string, error) {
 	if raw == "" {
-		return "''"
+		return "''", nil
+	}
+
+	escaped, err := escape(raw)
+	if err != nil {
+		return "", err
 	}
 
 	if govalidator.IsInt(raw) {
-		return fmt.Sprintf("%s", escape(raw))
+		return fmt.Sprintf("%s", escaped), nil
 	}
 
-	return fmt.Sprintf("'%s'", escape(raw))
+	return fmt.Sprintf("'%s'", escaped), nil
 }
 
-func escape(str string) string {
-	var esc string
-	var buf bytes.Buffer
-	last := 0
+func escape(str string) (string, error) {
+	var (
+		esc  string
+		buf  bytes.Buffer
+		last = 0
+	)
+
 	for i, c := range str {
 		switch c {
 		case 0:
@@ -43,10 +51,21 @@ func escape(str string) string {
 		default:
 			continue
 		}
-		io.WriteString(&buf, str[last:i])
-		io.WriteString(&buf, esc)
+
+		if _, err := io.WriteString(&buf, str[last:i]); err != nil {
+			return "", err
+		}
+
+		if _, err := io.WriteString(&buf, esc); err != nil {
+			return "", err
+		}
+
 		last = i + 1
 	}
-	io.WriteString(&buf, str[last:])
-	return buf.String()
+
+	if _, err := io.WriteString(&buf, str[last:]); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

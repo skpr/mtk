@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -27,7 +26,7 @@ func Load(path string) (Rules, error) {
 		return rules, nil
 	}
 
-	f, err := ioutil.ReadFile(path)
+	f, err := os.ReadFile(path)
 	if err != nil {
 		return rules, err
 	}

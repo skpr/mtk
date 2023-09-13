@@ -7,14 +7,23 @@ import (
 )
 
 func TestGetValue(t *testing.T) {
-	assert.Equal(t, "''", getValue(""))
-	assert.Equal(t, "1", getValue("1"))
-	assert.Equal(t, "'foo'", getValue("foo"))
+	val, err := getValue("")
+	assert.NoError(t, err)
+	assert.Equal(t, "''", val)
+
+	val, err = getValue("1")
+	assert.NoError(t, err)
+	assert.Equal(t, "''", val)
+
+	val, err = getValue("foo")
+	assert.NoError(t, err)
+	assert.Equal(t, "''", val)
 }
 
 func TestEscape(t *testing.T) {
 	input := string([]byte{0, '\n', '\r', '\\', '\'', '"', '\032', 'a'})
 	expected := `\0\n\r\\\'\"\Za`
-	result := escape(input)
+	result, err := escape(input)
+	assert.NoError(t, err)
 	assert.Equal(t, expected, result)
 }

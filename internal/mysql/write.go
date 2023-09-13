@@ -147,7 +147,10 @@ func (d *Client) WriteTableData(w io.Writer, table string) error {
 			val := "NULL"
 
 			if col != nil {
-				val = getValue(string(*col))
+				val, err = getValue(string(*col))
+				if err != nil {
+					return err
+				}
 			}
 
 			vals = append(vals, val)
@@ -196,11 +199,18 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 
 	skipData := d.FilterMap[strings.ToLower(table)] == OperationNoData
 	if !skipData && d.UseTableLock {
-		d.LockTableReading(table)
-		d.FlushTable(table)
+		if _, err := d.LockTableReading(table); err != nil {
+			return err
+		}
+
+		if _, err := d.FlushTable(table); err != nil {
+			return err
+		}
 	}
 
-	d.WriteCreateTable(w, table)
+	if err := d.WriteCreateTable(w, table); err != nil {
+		return err
+	}
 
 	if skipData {
 		return nil
@@ -218,7 +228,11 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 	d.WriteTableLockWrite(w, table)
 	d.WriteTableDisableKeys(w, table)
 	d.WriteAutoCommitOff(w)
-	d.WriteTableData(w, table)
+
+	if err := d.WriteTableData(w, table); err != nil {
+		return fmt.Errorf("failed to write table data: %w", err)
+	}
+
 	d.WriteTableEnableKeys(w, table)
 	d.WriteUnlockTables(w)
 	d.WriteCommit(w)
