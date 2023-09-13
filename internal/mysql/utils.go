@@ -19,7 +19,7 @@ func getValue(raw string) (string, error) {
 	}
 
 	if govalidator.IsInt(raw) {
-		return fmt.Sprintf("%s", escaped), nil
+		return escaped, nil
 	}
 
 	return fmt.Sprintf("'%s'", escaped), nil

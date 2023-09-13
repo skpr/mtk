@@ -13,11 +13,11 @@ func TestGetValue(t *testing.T) {
 
 	val, err = getValue("1")
 	assert.NoError(t, err)
-	assert.Equal(t, "''", val)
+	assert.Equal(t, "1", val)
 
 	val, err = getValue("foo")
 	assert.NoError(t, err)
-	assert.Equal(t, "''", val)
+	assert.Equal(t, "'foo'", val)
 }
 
 func TestEscape(t *testing.T) {
