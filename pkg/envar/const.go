@@ -15,4 +15,14 @@ const (
 	Protocol = "MTK_PROTOCOL"
 	// Port defines the environment variable when using the command line.
 	Port = "MTK_PORT"
+	// MySQLHostname defines the environment variable when using the command line.
+	MySQLHostname = "MYSQL_HOSTNAME"
+	// MySQLUsername defines the environment variable when using the command line.
+	MySQLUsername = "MYSQL_USERNAME"
+	// MySQLPassword defines the environment variable when using the command line.
+	MySQLPassword = "MYSQL_PASSWORD"
+	// MySQLProtocol defines the environment variable when using the command line.
+	MySQLProtocol = "MYSQL_PROTOCOL"
+	// MySQLPort defines the environment variable when using the command line.
+	MySQLPort = "MYSQL_PORT"
 )

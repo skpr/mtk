@@ -45,12 +45,12 @@ Toolkit for exporting, sanitizing and packaging MySQL databases.`,
 }
 
 func init() {
-	cmd.PersistentFlags().StringVar(&conn.Hostname, "host", envar.GetStringWithFallback(envar.Hostname, ""), "Host address of the MySQL instance")
-	cmd.PersistentFlags().StringVar(&conn.Username, "user", envar.GetStringWithFallback(envar.Username, ""), "Username used to connect to MySQL instance")
-	cmd.PersistentFlags().StringVar(&conn.Password, "password", envar.GetStringWithFallback(envar.Password, ""), "Password used to connect to MySQL instance")
-	cmd.PersistentFlags().StringVar(&conn.Protocol, "protocol", envar.GetStringWithFallback(envar.Protocol, "tcp"), "Connection protocol to use when connecting to MySQL instance")
-	cmd.PersistentFlags().Int32Var(&conn.Port, "port", int32(envar.GetIntWithFallback(envar.Port, 3306)), "Port to connect to the MySQL instance on")
-	cmd.PersistentFlags().IntVar(&conn.MaxConn, "max-conn", envar.GetIntWithFallback(envar.MaxConn, 50), "Sets the maximum number of open connections to the database")
+	cmd.PersistentFlags().StringVar(&conn.Hostname, "host", envar.GetStringWithFallback("", envar.Hostname, envar.MySQLHostname), "Host address of the MySQL instance")
+	cmd.PersistentFlags().StringVar(&conn.Username, "user", envar.GetStringWithFallback("", envar.Username, envar.MySQLUsername), "Username used to connect to MySQL instance")
+	cmd.PersistentFlags().StringVar(&conn.Password, "password", envar.GetStringWithFallback("", envar.Password, envar.MySQLPassword), "Password used to connect to MySQL instance")
+	cmd.PersistentFlags().StringVar(&conn.Protocol, "protocol", envar.GetStringWithFallback("tcp", envar.Protocol, envar.MySQLProtocol), "Connection protocol to use when connecting to MySQL instance")
+	cmd.PersistentFlags().Int32Var(&conn.Port, "port", int32(envar.GetIntWithFallback(3306, envar.Port, envar.MySQLPort)), "Port to connect to the MySQL instance on")
+	cmd.PersistentFlags().IntVar(&conn.MaxConn, "max-conn", envar.GetIntWithFallback(50, envar.MaxConn), "Sets the maximum number of open connections to the database")
 }
 
 func main() {

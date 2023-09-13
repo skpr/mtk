@@ -70,7 +70,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback(envar.Config, ""), "Path to the configuration file which contains the rules")
+	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
 
 	return cmd
 }
