@@ -60,7 +60,7 @@ func (d *Client) QueryTables() ([]string, error) {
 }
 
 // QueryColumnsForTable for a given table.
-func (d *Client) QueryColumnsForTable(table string) ([]string, error) {
+func (d *Client) QueryColumnsForTable(table string, params DumpParams) ([]string, error) {
 	var rows *sql.Rows
 
 	rows, err := d.DB.Query(fmt.Sprintf("SELECT * FROM `%s` LIMIT 1", table))
@@ -76,7 +76,7 @@ func (d *Client) QueryColumnsForTable(table string) ([]string, error) {
 	}
 
 	for k, column := range columns {
-		replacement, ok := d.SelectMap[strings.ToLower(table)][strings.ToLower(column)]
+		replacement, ok := params.SelectMap[strings.ToLower(table)][strings.ToLower(column)]
 		if ok {
 			columns[k] = fmt.Sprintf("%s AS `%s`", replacement, column)
 		} else {
@@ -88,15 +88,15 @@ func (d *Client) QueryColumnsForTable(table string) ([]string, error) {
 }
 
 // GetSelectQueryForTable will return a complete SELECT query to fetch data from a table.
-func (d *Client) GetSelectQueryForTable(table string) (string, error) {
-	cols, err := d.QueryColumnsForTable(table)
+func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string, error) {
+	cols, err := d.QueryColumnsForTable(table, params)
 	if err != nil {
 		return "", err
 	}
 
 	query := fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
 
-	if where, ok := d.WhereMap[strings.ToLower(table)]; ok {
+	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 
@@ -104,8 +104,8 @@ func (d *Client) GetSelectQueryForTable(table string) (string, error) {
 }
 
 // Helper function to get all data for a table.
-func (d *Client) selectAllDataForTable(table string) (*sql.Rows, []string, error) {
-	query, err := d.GetSelectQueryForTable(table)
+func (d *Client) selectAllDataForTable(table string, params DumpParams) (*sql.Rows, []string, error) {
+	query, err := d.GetSelectQueryForTable(table, params)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -124,10 +124,10 @@ func (d *Client) selectAllDataForTable(table string) (*sql.Rows, []string, error
 }
 
 // GetRowCountForTable will return the number of rows using a SELECT statement.
-func (d *Client) GetRowCountForTable(table string) (uint64, error) {
+func (d *Client) GetRowCountForTable(table string, params DumpParams) (uint64, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)
 
-	if where, ok := d.WhereMap[strings.ToLower(table)]; ok {
+	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 

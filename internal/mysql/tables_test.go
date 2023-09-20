@@ -3,11 +3,11 @@ package mysql
 import (
 	"bytes"
 	"errors"
-	"github.com/DATA-DOG/go-sqlmock"
 	"log"
 	"os"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/skpr/mtk/internal/mysql/mock"
@@ -100,10 +100,11 @@ func TestMySQLDumpCreateTableHandlingErrorWhenScanningRows(t *testing.T) {
 func TestMySQLGetColumnsForSelect(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.SelectMap = map[string]map[string]string{"table": {"col2": "NOW()"}}
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"col1", "col2", "col3"}).AddRow("a", "b", "c"))
-	columns, err := dumper.QueryColumnsForTable("table")
+	columns, err := dumper.QueryColumnsForTable("table", DumpParams{
+		SelectMap: map[string]map[string]string{"table": {"col2": "NOW()"}},
+	})
 	assert.Nil(t, err)
 	assert.Equal(t, []string{"`col1`", "NOW() AS `col2`", "`col3`"}, columns)
 }
@@ -111,10 +112,11 @@ func TestMySQLGetColumnsForSelect(t *testing.T) {
 func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.SelectMap = map[string]map[string]string{"table": {"col2": "NOW()"}}
 	error := errors.New("broken")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
-	columns, err := dumper.QueryColumnsForTable("table")
+	columns, err := dumper.QueryColumnsForTable("table", DumpParams{
+		SelectMap: map[string]map[string]string{"table": {"col2": "NOW()"}},
+	})
 	assert.Equal(t, err, error)
 	assert.Empty(t, columns)
 }
@@ -122,11 +124,12 @@ func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 func TestMySQLGetSelectQueryFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.SelectMap = map[string]map[string]string{"table": {"c2": "NOW()"}}
-	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
-	query, err := dumper.GetSelectQueryForTable("table")
+	query, err := dumper.GetSelectQueryForTable("table", DumpParams{
+		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
+		WhereMap:  map[string]string{"table": "c1 > 0"},
+	})
 	assert.Nil(t, err)
 	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0", query)
 }
@@ -134,11 +137,12 @@ func TestMySQLGetSelectQueryFor(t *testing.T) {
 func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.SelectMap = map[string]map[string]string{"table": {"c2": "NOW()"}}
-	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	error := errors.New("broken")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
-	query, err := dumper.GetSelectQueryForTable("table")
+	query, err := dumper.GetSelectQueryForTable("table", DumpParams{
+		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
+		WhereMap:  map[string]string{"table": "c1 > 0"},
+	})
 	assert.Equal(t, error, err)
 	assert.Equal(t, "", query)
 }
@@ -146,10 +150,11 @@ func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 func TestMySQLGetRowCount(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table` WHERE c1 > 0").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
-	count, err := dumper.GetRowCountForTable("table")
+	count, err := dumper.GetRowCountForTable("table", DumpParams{
+		WhereMap: map[string]string{"table": "c1 > 0"},
+	})
 	assert.Nil(t, err)
 	assert.Equal(t, uint64(1234), count)
 }
@@ -157,10 +162,11 @@ func TestMySQLGetRowCount(t *testing.T) {
 func TestMySQLGetRowCountHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.WhereMap = map[string]string{"table": "c1 > 0"}
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table` WHERE c1 > 0").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))
-	count, err := dumper.GetRowCountForTable("table")
+	count, err := dumper.GetRowCountForTable("table", DumpParams{
+		WhereMap: map[string]string{"table": "c1 > 0"},
+	})
 	assert.NotNil(t, err)
 	assert.Equal(t, uint64(0), count)
 }

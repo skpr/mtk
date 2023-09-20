@@ -20,7 +20,7 @@ func TestMySQLDumpTableHeader(t *testing.T) {
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	count, err := dumper.WriteTableHeader(buffer, "table")
+	count, err := dumper.WriteTableHeader(buffer, "table", DumpParams{})
 	assert.Equal(t, uint64(1234), count)
 	assert.Nil(t, err)
 	assert.Contains(t, buffer.String(), "Data for table `table`")
@@ -33,7 +33,7 @@ func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	count, err := dumper.WriteTableHeader(buffer, "table")
+	count, err := dumper.WriteTableHeader(buffer, "table", DumpParams{})
 	assert.Equal(t, uint64(0), count)
 	assert.NotNil(t, err)
 }
@@ -56,7 +56,6 @@ func TestMySQLDumpTableData(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.ExtendedInsertRows = 2
 
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"id", "language"}).
@@ -71,15 +70,15 @@ func TestMySQLDumpTableData(t *testing.T) {
 			AddRow(5, "Rust").
 			AddRow(6, "Closure"))
 
-	assert.Nil(t, dumper.WriteTableData(buffer, "table"))
+	assert.Nil(t, dumper.WriteTableData(buffer, "table", DumpParams{ExtendedInsertRows: 2}))
 
 	assert.Equal(t, strings.Count(buffer.String(), "INSERT INTO `table` VALUES"), 3)
-	assert.Contains(t, buffer.String(), `'Go'`)
-	assert.Contains(t, buffer.String(), `'Java'`)
-	assert.Contains(t, buffer.String(), `'C'`)
-	assert.Contains(t, buffer.String(), `'C++'`)
-	assert.Contains(t, buffer.String(), `'Rust'`)
-	assert.Contains(t, buffer.String(), `'Closure'`)
+	assert.Contains(t, buffer.String(), `( 1, 'Go' ),`)
+	assert.Contains(t, buffer.String(), `( 2, 'Java' );`)
+	assert.Contains(t, buffer.String(), `( 3, 'C' ),`)
+	assert.Contains(t, buffer.String(), `( 4, 'C++' );`)
+	assert.Contains(t, buffer.String(), `( 5, 'Rust' ),`)
+	assert.Contains(t, buffer.String(), `( 6, 'Closure' );`)
 }
 
 func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
@@ -88,5 +87,5 @@ func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	error := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
-	assert.Equal(t, error, dumper.WriteTableData(buffer, "table"))
+	assert.Equal(t, error, dumper.WriteTableData(buffer, "table", DumpParams{}))
 }

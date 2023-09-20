@@ -101,10 +101,10 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 }
 
 // WriteTableHeader which contains debug information.
-func (d *Client) WriteTableHeader(w io.Writer, table string) (uint64, error) {
+func (d *Client) WriteTableHeader(w io.Writer, table string, params DumpParams) (uint64, error) {
 	fmt.Fprintf(w, "\n--\n-- Data for table `%s`", table)
 
-	count, err := d.GetRowCountForTable(table)
+	count, err := d.GetRowCountForTable(table, params)
 	if err != nil {
 		return 0, err
 	}
@@ -115,10 +115,10 @@ func (d *Client) WriteTableHeader(w io.Writer, table string) (uint64, error) {
 }
 
 // WriteTableData for a specific table.
-func (d *Client) WriteTableData(w io.Writer, table string) error {
+func (d *Client) WriteTableData(w io.Writer, table string, params DumpParams) error {
 	d.Logger.Println("Dumping data for table:", table)
 
-	rows, columns, err := d.selectAllDataForTable(table)
+	rows, columns, err := d.selectAllDataForTable(table, params)
 	if err != nil {
 		return err
 	}
@@ -132,11 +132,30 @@ func (d *Client) WriteTableData(w io.Writer, table string) error {
 		scanArgs[i] = &values[i]
 	}
 
-	query := fmt.Sprintf("INSERT INTO `%s` VALUES", table)
-
-	var data []string
+	var (
+		counter  int
+		firstRun bool
+	)
 
 	for rows.Next() {
+		// We have already done a loop and need to close the previous insert statement.
+		if counter >= params.ExtendedInsertRows {
+			fmt.Fprintln(w, ";")
+			counter = 0
+		} else {
+			if !firstRun {
+				fmt.Fprintln(w, ",")
+			}
+		}
+
+		if counter == 0 {
+			fmt.Fprintf(w, "INSERT INTO `%s` VALUES\n", table)
+		}
+
+		counter++
+
+		firstRun = false
+
 		if err = rows.Scan(scanArgs...); err != nil {
 			return err
 		}
@@ -156,34 +175,23 @@ func (d *Client) WriteTableData(w io.Writer, table string) error {
 			vals = append(vals, val)
 		}
 
-		data = append(data, fmt.Sprintf("( %s )", strings.Join(vals, ", ")))
-
-		if d.ExtendedInsertRows == 0 {
-			continue
-		}
-
-		if len(data) >= d.ExtendedInsertRows {
-			fmt.Fprintf(w, "%s\n%s;\n", query, strings.Join(data, ",\n"))
-			data = make([]string, 0)
-		}
+		fmt.Fprintf(w, "( %s )", strings.Join(vals, ", "))
 	}
 
-	if len(data) > 0 {
-		fmt.Fprintf(w, "%s\n%s;\n", query, strings.Join(data, ",\n"))
-	}
+	fmt.Fprintln(w, ";")
 
 	return nil
 }
 
 // WriteTables will create a script for all tables.
-func (d *Client) writeTables(w io.Writer) error {
+func (d *Client) writeTables(w io.Writer, params DumpParams) error {
 	tables, err := d.QueryTables()
 	if err != nil {
 		return err
 	}
 
 	for _, table := range tables {
-		if err := d.writeTable(w, table); err != nil {
+		if err := d.writeTable(w, table, params); err != nil {
 			return err
 		}
 	}
@@ -192,13 +200,13 @@ func (d *Client) writeTables(w io.Writer) error {
 }
 
 // WriteTable allows for a single table dump script.
-func (d *Client) writeTable(w io.Writer, table string) error {
-	if d.FilterMap[strings.ToLower(table)] == OperationIgnore {
+func (d *Client) writeTable(w io.Writer, table string, params DumpParams) error {
+	if params.FilterMap[strings.ToLower(table)] == OperationIgnore {
 		return nil
 	}
 
-	skipData := d.FilterMap[strings.ToLower(table)] == OperationNoData
-	if !skipData && d.UseTableLock {
+	skipData := params.FilterMap[strings.ToLower(table)] == OperationNoData
+	if !skipData && params.UseTableLock {
 		if _, err := d.LockTableReading(table); err != nil {
 			return err
 		}
@@ -216,7 +224,7 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 		return nil
 	}
 
-	cnt, err := d.WriteTableHeader(w, table)
+	cnt, err := d.WriteTableHeader(w, table, params)
 	if err != nil {
 		return err
 	}
@@ -229,7 +237,7 @@ func (d *Client) writeTable(w io.Writer, table string) error {
 	d.WriteTableDisableKeys(w, table)
 	d.WriteAutoCommitOff(w)
 
-	if err := d.WriteTableData(w, table); err != nil {
+	if err := d.WriteTableData(w, table, params); err != nil {
 		return fmt.Errorf("failed to write table data: %w", err)
 	}
 

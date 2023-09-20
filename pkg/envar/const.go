@@ -15,6 +15,8 @@ const (
 	Protocol = "MTK_PROTOCOL"
 	// Port defines the environment variable when using the command line.
 	Port = "MTK_PORT"
+	// ExtendedInsertRows defines the environment variable when using the command line.
+	ExtendedInsertRows = "MTK_EXTENDED_INSERT_ROWS"
 	// MySQLHostname defines the environment variable when using the command line.
 	MySQLHostname = "MYSQL_HOSTNAME"
 	// MySQLUsername defines the environment variable when using the command line.
