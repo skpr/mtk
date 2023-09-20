@@ -17,7 +17,7 @@ const (
 	OperationNoData = "nodata"
 
 	// DefaultExtendedInsertRows is used when a value is not provided.
-	DefaultExtendedInsertRows = 10000
+	DefaultExtendedInsertRows = 100
 )
 
 type Connection struct {
