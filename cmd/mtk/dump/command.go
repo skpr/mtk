@@ -32,7 +32,8 @@ const cmdExample = `
 
 // Options is the commandline options for 'config' sub command
 type Options struct {
-	ConfigFile string
+	ConfigFile         string
+	ExtendedInsertRows int
 }
 
 func NewOptions() Options {
@@ -73,6 +74,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
+	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
 
 	return cmd
 }
@@ -99,21 +101,25 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 		return err
 	}
 
+	params := mysql.DumpParams{
+		ExtendedInsertRows: o.ExtendedInsertRows,
+	}
+
 	// Assign nodata tables.
-	client.FilterMap = make(map[string]string)
+	params.FilterMap = make(map[string]string)
 	for _, table := range nodata {
 		// @todo, Needs to be const values in mysqlsuperdump
-		client.FilterMap[table] = "nodata"
+		params.FilterMap[table] = "nodata"
 	}
 
 	// Assign ignore tables.
 	for _, table := range ignore {
 		// @todo, Needs to be const values in mysqlsuperdump
-		client.FilterMap[table] = "ignore"
+		params.FilterMap[table] = "ignore"
 	}
 
 	// Assign our sanitization rules to the dumper.
-	client.SelectMap = cfg.SanitizeMap()
+	params.SelectMap = cfg.SanitizeMap()
 
 	// Assign conditional row rules to the dumper, passed through a globber.
 	where := make(map[string]string, 0)
@@ -129,11 +135,11 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 		}
 	}
 
-	client.WhereMap = where
+	params.WhereMap = where
 
 	if table != "" {
-		return client.DumpTable(w, table)
+		return client.DumpTable(w, table, params)
 	}
 
-	return client.DumpTables(w)
+	return client.DumpTables(w, params)
 }
