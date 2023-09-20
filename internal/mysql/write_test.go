@@ -73,12 +73,7 @@ func TestMySQLDumpTableData(t *testing.T) {
 	assert.Nil(t, dumper.WriteTableData(buffer, "table", DumpParams{ExtendedInsertRows: 2}))
 
 	assert.Equal(t, strings.Count(buffer.String(), "INSERT INTO `table` VALUES"), 3)
-	assert.Contains(t, buffer.String(), `(1,'Go'),`)
-	assert.Contains(t, buffer.String(), `(2,'Java');`)
-	assert.Contains(t, buffer.String(), `(3,'C'),`)
-	assert.Contains(t, buffer.String(), `(4,'C++');`)
-	assert.Contains(t, buffer.String(), `(5,'Rust'),`)
-	assert.Contains(t, buffer.String(), `(6,'Closure');`)
+	assert.Equal(t, buffer.String(), "INSERT INTO `table` VALUES (1,'Go'),(2,'Java');\nINSERT INTO `table` VALUES (3,'C'),(4,'C++');\nINSERT INTO `table` VALUES (5,'Rust'),(6,'Closure');\n")
 }
 
 func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {

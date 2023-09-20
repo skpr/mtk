@@ -133,8 +133,8 @@ func (d *Client) WriteTableData(w io.Writer, table string, params DumpParams) er
 	}
 
 	var (
-		counter  int
-		firstRun bool
+		counter  = 0
+		firstRun = true
 	)
 
 	for rows.Next() {
