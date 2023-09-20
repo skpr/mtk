@@ -144,12 +144,12 @@ func (d *Client) WriteTableData(w io.Writer, table string, params DumpParams) er
 			counter = 0
 		} else {
 			if !firstRun {
-				fmt.Fprintln(w, ",")
+				fmt.Fprint(w, ",")
 			}
 		}
 
 		if counter == 0 {
-			fmt.Fprintf(w, "INSERT INTO `%s` VALUES\n", table)
+			fmt.Fprintf(w, "INSERT INTO `%s` VALUES ", table)
 		}
 
 		counter++
@@ -175,7 +175,7 @@ func (d *Client) WriteTableData(w io.Writer, table string, params DumpParams) er
 			vals = append(vals, val)
 		}
 
-		fmt.Fprintf(w, "( %s )", strings.Join(vals, ", "))
+		fmt.Fprintf(w, "(%s)", strings.Join(vals, ","))
 	}
 
 	fmt.Fprintln(w, ";")
