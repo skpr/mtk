@@ -74,7 +74,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
-	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(100, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
+	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
 
 	return cmd
 }
