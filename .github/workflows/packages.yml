@@ -1,8 +1,11 @@
-name: Create and publish a Docker image
+name: Create and publish a Github Package
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - 'main'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+[0-9A-Za-z]?'
 
 env:
   REGISTRY: ghcr.io
