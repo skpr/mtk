@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gobwas/glob"
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/internal/mysql"
@@ -89,6 +90,14 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 
 	client := mysql.NewClient(db, logger)
 
+	if table != "" {
+		return o.runDumpTable(w, client, table, cfg)
+	}
+
+	return o.runDumpTables(w, client, cfg)
+}
+
+func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Rules) error {
 	// Get a list of tables to nodata, passed through a globber.
 	nodata, err := client.ListTablesByGlob(cfg.NoData)
 	if err != nil {
@@ -137,9 +146,71 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 
 	params.WhereMap = where
 
-	if table != "" {
-		return client.DumpTable(w, table, params)
+	return client.DumpTables(w, params)
+}
+
+// Helper function to dump a single table.
+// This function builds a list of DumpParams to that are specific to this table to avoid any performance bottlenecks.
+//
+//	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
+func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
+	params := mysql.DumpParams{
+		ExtendedInsertRows: o.ExtendedInsertRows,
 	}
 
-	return client.DumpTables(w, params)
+	// If this table matches an ignore glob, then skip it.
+	for _, query := range cfg.Ignore {
+		g := glob.MustCompile(query)
+
+		if !g.Match(table) {
+			continue
+		}
+
+		params.FilterMap = map[string]string{
+			table: "ignore",
+		}
+
+		return nil
+	}
+
+	// If this table matches a nodata glob, then add it to the nodata params.
+	for _, query := range cfg.NoData {
+		g := glob.MustCompile(query)
+
+		if !g.Match(table) {
+			continue
+		}
+
+		params.FilterMap = map[string]string{
+			table: "nodata",
+		}
+	}
+
+	// Add sanitization rules for this table if they match the glob.
+	for query, condition := range cfg.SanitizeMap() {
+		g := glob.MustCompile(query)
+
+		if !g.Match(table) {
+			continue
+		}
+
+		params.SelectMap = map[string]map[string]string{
+			table: condition,
+		}
+	}
+
+	// Add where conditions for this table if they match the glob.
+	for query, condition := range cfg.WhereMap() {
+		g := glob.MustCompile(query)
+
+		if !g.Match(table) {
+			continue
+		}
+
+		params.WhereMap = map[string]string{
+			table: condition,
+		}
+	}
+
+	return client.DumpTable(w, table, params)
 }
