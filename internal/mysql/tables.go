@@ -34,6 +34,11 @@ func (d *Client) ListTablesByGlob(globs []string) ([]string, error) {
 
 // QueryTables will return a list of tables.
 func (d *Client) QueryTables() ([]string, error) {
+	// Use the cached tables if we have them.
+	if len(d.cachedTables) > 0 {
+		return d.cachedTables, nil
+	}
+
 	tables := make([]string, 0)
 
 	rows, err := d.DB.Query("SHOW FULL TABLES")
@@ -55,6 +60,9 @@ func (d *Client) QueryTables() ([]string, error) {
 			tables = append(tables, tableName)
 		}
 	}
+
+	// Set the cached tables for future executions.
+	d.cachedTables = tables
 
 	return tables, nil
 }

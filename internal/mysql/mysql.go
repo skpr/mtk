@@ -49,6 +49,8 @@ func (o Connection) Open(database string) (*sql.DB, error) {
 type Client struct {
 	DB     *sql.DB
 	Logger *log.Logger
+	// A field for caching a list of tables for this database.
+	cachedTables []string
 }
 
 // NewClient for dumping a full or single table from a database.
