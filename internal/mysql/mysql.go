@@ -68,6 +68,9 @@ type DumpParams struct {
 	FilterMap          map[string]string
 	UseTableLock       bool
 	ExtendedInsertRows int
+
+	ExportData bool
+	S3Path     string
 }
 
 // DumpTables will write all table data to a single writer.

@@ -99,14 +99,52 @@ func (d *Client) QueryColumnsForTable(table string, params DumpParams) ([]string
 func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string, error) {
 	cols, err := d.QueryColumnsForTable(table, params)
 	if err != nil {
+		fmt.Println("ERR")
 		return "", err
 	}
 
-	query := fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
+	var query string
+
+	// Exporting query builder for when the export flag is added to the dump command.
+	if params.ExportData && params.S3Path != "" {
+		query = fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
+		query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.S3Path, table)
+		query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+		query = fmt.Sprintf("%s FROM `%s`", query, table)
+
+		if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
+			query = fmt.Sprintf("%s WHERE %s", query, where)
+		}
+
+		importQuery, err := d.GetLoadDataQueryForTable(table, params.S3Path)
+		if err != nil {
+			return "", err
+		}
+
+		fmt.Println(importQuery)
+		return query, nil
+	}
+
+	// Default query builder for when no export flags are added to the dump command.
+	query = fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
+
+	return query, nil
+}
+
+// GetLoadDataQueryForTable will return a complete SELECT query to fetch data from a table.
+func (d *Client) GetLoadDataQueryForTable(table, path string) (string, error) {
+	if table == "" {
+		return "", fmt.Errorf("error: no table specified")
+	}
+	if !strings.HasPrefix(path, "s3://") {
+		return "", fmt.Errorf("error: invalid path specified")
+	}
+	query := fmt.Sprintf("LOAD DATA FROM '%s/%s.csv' INTO TABLE `%s`", path, table, table)
+	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 
 	return query, nil
 }

@@ -35,6 +35,9 @@ const cmdExample = `
 type Options struct {
 	ConfigFile         string
 	ExtendedInsertRows int
+
+	DataExport bool
+	S3Path     string
 }
 
 func NewOptions() Options {
@@ -77,6 +80,9 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
 	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
 
+	cmd.Flags().BoolVar(&o.DataExport, "data-export", false, "Export data using SELECT INTO OUTFILE statements.")
+	cmd.Flags().StringVar(&o.S3Path, "data-path", "", "The S3 bucket URI (e.g s3://my/bucket/path).")
+
 	return cmd
 }
 
@@ -112,6 +118,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 
 	params := mysql.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
+		ExportData:         o.DataExport,
+		S3Path:             o.S3Path,
 	}
 
 	// Assign nodata tables.
@@ -156,6 +164,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
 	params := mysql.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
+		ExportData:         o.DataExport,
+		S3Path:             o.S3Path,
 	}
 
 	// If this table matches an ignore glob, then skip it.
