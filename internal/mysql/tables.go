@@ -105,9 +105,9 @@ func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string
 	var query string
 
 	// Exporting query builder for when the export flag is added to the dump command.
-	if params.ExportData && params.S3Path != "" {
+	if params.DataExport && params.DataPath != "" {
 		query = fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
-		query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.S3Path, table)
+		query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.DataPath, table)
 		query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 		query = fmt.Sprintf("%s FROM `%s`", query, table)
 
@@ -115,7 +115,7 @@ func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string
 			query = fmt.Sprintf("%s WHERE %s", query, where)
 		}
 
-		importQuery, err := d.GetLoadDataQueryForTable(table, params.S3Path)
+		importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath)
 		if err != nil {
 			return "", err
 		}
@@ -138,9 +138,6 @@ func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string
 func (d *Client) GetLoadDataQueryForTable(table, path string) (string, error) {
 	if table == "" {
 		return "", fmt.Errorf("error: no table specified")
-	}
-	if !strings.HasPrefix(path, "s3://") {
-		return "", fmt.Errorf("error: invalid path specified")
 	}
 	query := fmt.Sprintf("LOAD DATA FROM '%s/%s.csv' INTO TABLE `%s`", path, table, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)

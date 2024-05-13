@@ -69,8 +69,8 @@ type DumpParams struct {
 	UseTableLock       bool
 	ExtendedInsertRows int
 
-	ExportData bool
-	S3Path     string
+	DataExport bool
+	DataPath   string
 }
 
 // DumpTables will write all table data to a single writer.
