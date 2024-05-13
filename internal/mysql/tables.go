@@ -99,7 +99,6 @@ func (d *Client) QueryColumnsForTable(table string, params DumpParams) ([]string
 func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string, error) {
 	cols, err := d.QueryColumnsForTable(table, params)
 	if err != nil {
-		fmt.Println("ERR")
 		return "", err
 	}
 
