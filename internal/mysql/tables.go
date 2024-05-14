@@ -102,35 +102,37 @@ func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string
 		return "", err
 	}
 
-	var query string
-
-	// Exporting query builder for when the export flag is added to the dump command.
-	if params.DataExport && params.DataPath != "" {
-		query = fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
-		query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.DataPath, table)
-		query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
-		query = fmt.Sprintf("%s FROM `%s`", query, table)
-
-		if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
-			query = fmt.Sprintf("%s WHERE %s", query, where)
-		}
-
-		importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath)
-		if err != nil {
-			return "", err
-		}
-
-		fmt.Println(importQuery)
-		return query, nil
-	}
-
-	// Default query builder for when no export flags are added to the dump command.
-	query = fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
+	query := fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 
+	return query, nil
+}
+
+// GetSelectIntoOutFileQueryForTable will return a complete SELECT query to export data from a table.
+func (d *Client) GetSelectIntoOutFileQueryForTable(table string, params DumpParams) (string, error) {
+	cols, err := d.QueryColumnsForTable(table, params)
+	if err != nil {
+		return "", err
+	}
+
+	query := fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
+	query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.DataPath, table)
+	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+	query = fmt.Sprintf("%s FROM `%s`", query, table)
+
+	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
+		query = fmt.Sprintf("%s WHERE %s", query, where)
+	}
+
+	importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(importQuery)
 	return query, nil
 }
 
@@ -150,6 +152,13 @@ func (d *Client) selectAllDataForTable(table string, params DumpParams) (*sql.Ro
 	query, err := d.GetSelectQueryForTable(table, params)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if params.DataExport && params.DataPath != "" {
+		query, err = d.GetSelectIntoOutFileQueryForTable(table, params)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	rows, err := d.DB.Query(query)

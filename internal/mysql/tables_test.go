@@ -134,6 +134,31 @@ func TestMySQLGetSelectQueryFor(t *testing.T) {
 	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0", query)
 }
 
+func TestMySQLGetExportSelectQueryFor(t *testing.T) {
+	db, mock := mock.GetDB(t)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
+	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
+		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
+	query, err := dumper.GetSelectIntoOutFileQueryForTable("table", DumpParams{
+		SelectMap:  map[string]map[string]string{"table": {"c2": "NOW()"}},
+		WhereMap:   map[string]string{"table": "c1 > 0"},
+		DataExport: true,
+		DataPath:   "s3://path/to/bucket",
+	})
+	assert.Nil(t, err)
+	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` INTO OUTFILE 's3://path/to/bucket/table.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' FROM `table` WHERE c1 > 0", query)
+
+}
+
+func TestMySQLGetImportSelectQueryFor(t *testing.T) {
+	db, _ := mock.GetDB(t)
+	dumper := NewClient(db, log.New(os.Stdout, "", 0))
+	query, err := dumper.GetLoadDataQueryForTable("table_name", "s3://path/to/bucket")
+	assert.Nil(t, err)
+	assert.Equal(t, "LOAD DATA FROM 's3://path/to/bucket/table_name.csv' INTO TABLE `table_name` FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+
+}
+
 func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
