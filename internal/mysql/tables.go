@@ -119,7 +119,7 @@ func (d *Client) GetSelectIntoOutFileQueryForTable(table string, params DumpPara
 	}
 
 	query := fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
-	query = fmt.Sprintf("%s INTO OUTFILE '%s/%s.csv'", query, params.DataPath, table)
+	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, params.DataPath, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 	query = fmt.Sprintf("%s FROM `%s`", query, table)
 
