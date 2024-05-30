@@ -144,9 +144,10 @@ func TestMySQLGetExportSelectQueryFor(t *testing.T) {
 		WhereMap:   map[string]string{"table": "c1 > 0"},
 		DataExport: true,
 		DataPath:   "s3://path/to/bucket",
+		Region:     "ap-southeast-4",
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` INTO OUTFILE 's3://path/to/bucket/table.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' FROM `table` WHERE c1 > 0", query)
+	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0 INTO OUTFILE S3 's3://path/to/bucket/table.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' MANIFEST ON OVERWRITE ON", query)
 
 }
 
