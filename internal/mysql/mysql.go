@@ -71,6 +71,7 @@ type DumpParams struct {
 
 	DataExport bool
 	DataPath   string
+	Region     string
 }
 
 // DumpTables will write all table data to a single writer.

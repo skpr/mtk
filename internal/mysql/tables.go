@@ -119,15 +119,18 @@ func (d *Client) GetSelectIntoOutFileQueryForTable(table string, params DumpPara
 	}
 
 	query := fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
-	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, params.DataPath, table)
-	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 	query = fmt.Sprintf("%s FROM `%s`", query, table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 
-	importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath)
+	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, params.DataPath, table)
+	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+	query = fmt.Sprintf("%s MANIFEST ON", query)
+	query = fmt.Sprintf("%s OVERWRITE ON", query)
+
+	importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath, params.Region)
 	if err != nil {
 		return "", err
 	}
@@ -137,11 +140,15 @@ func (d *Client) GetSelectIntoOutFileQueryForTable(table string, params DumpPara
 }
 
 // GetLoadDataQueryForTable will return a complete SELECT query to fetch data from a table.
-func (d *Client) GetLoadDataQueryForTable(table, path string) (string, error) {
+func (d *Client) GetLoadDataQueryForTable(table, path, region string) (string, error) {
 	if table == "" {
 		return "", fmt.Errorf("error: no table specified")
 	}
-	query := fmt.Sprintf("LOAD DATA FROM '%s/%s.csv' INTO TABLE `%s`", path, table, table)
+	if region == "" || len(strings.Split(region, "-")) != 3 {
+		return "", fmt.Errorf("error: region is not configured correctly")
+	}
+	path = strings.TrimPrefix(path, "s3://")
+	query := fmt.Sprintf("LOAD DATA FROM S3 FILE 'S3-%s://%s/%s.csv' INTO TABLE `%s`", region, path, table, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 
 	return query, nil

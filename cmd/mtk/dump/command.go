@@ -38,6 +38,7 @@ type Options struct {
 
 	DataExport bool
 	DataPath   string
+	Region     string
 }
 
 func NewOptions() Options {
@@ -82,6 +83,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 
 	cmd.Flags().BoolVar(&o.DataExport, "data-export", false, "Export data using SELECT INTO OUTFILE statements.")
 	cmd.Flags().StringVar(&o.DataPath, "data-path", "", "The S3 bucket URI (e.g s3://my/bucket/path).")
+	cmd.Flags().StringVar(&o.Region, "region", "", "The S3 bucket region.")
 
 	return cmd
 }
@@ -120,6 +122,7 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 		ExtendedInsertRows: o.ExtendedInsertRows,
 		DataExport:         o.DataExport,
 		DataPath:           o.DataPath,
+		Region:             o.Region,
 	}
 
 	// Assign nodata tables.
@@ -166,6 +169,7 @@ func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, 
 		ExtendedInsertRows: o.ExtendedInsertRows,
 		DataExport:         o.DataExport,
 		DataPath:           o.DataPath,
+		Region:             o.Region,
 	}
 
 	// If this table matches an ignore glob, then skip it.
