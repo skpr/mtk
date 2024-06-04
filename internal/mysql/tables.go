@@ -148,7 +148,7 @@ func (d *Client) GetLoadDataQueryForTable(table, path, region string) (string, e
 		return "", fmt.Errorf("error: region is not configured correctly")
 	}
 	path = strings.TrimPrefix(path, "s3://")
-	query := fmt.Sprintf("LOAD DATA FROM S3 FILE 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s`", region, path, table, table)
+	query := fmt.Sprintf("LOAD DATA FROM S3 MANIFEST 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s`", region, path, table, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 
 	return query, nil
