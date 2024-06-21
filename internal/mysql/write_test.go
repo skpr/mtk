@@ -71,7 +71,10 @@ func TestMySQLDumpTableData(t *testing.T) {
 			AddRow(5, "Rust").
 			AddRow(6, "Closure"))
 
-	assert.Nil(t, dumper.WriteTableData(buffer, "table", providers.DumpParams{ExtendedInsertRows: 2}))
+	assert.Nil(t, dumper.WriteTableData(buffer, "table", providers.DumpParams{
+		ExtendedInsertRows: 2,
+		Provider:           "stdout",
+	}))
 
 	assert.Equal(t, strings.Count(buffer.String(), "INSERT INTO `table` VALUES"), 3)
 	assert.Equal(t, buffer.String(), "INSERT INTO `table` VALUES (1,'Go'),(2,'Java');\nINSERT INTO `table` VALUES (3,'C'),(4,'C++');\nINSERT INTO `table` VALUES (5,'Rust'),(6,'Closure');\n")
@@ -83,5 +86,7 @@ func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	error := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
-	assert.Equal(t, error, dumper.WriteTableData(buffer, "table", providers.DumpParams{}))
+	assert.Equal(t, error, dumper.WriteTableData(buffer, "table", providers.DumpParams{
+		Provider: "stdout",
+	}))
 }
