@@ -62,19 +62,6 @@ func NewClient(db *sql.DB, logger *log.Logger) *Client {
 	}
 }
 
-// DumpParams is used to pass parameters to the Dump function.
-type DumpParams struct {
-	SelectMap          map[string]map[string]string
-	WhereMap           map[string]string
-	FilterMap          map[string]string
-	UseTableLock       bool
-	ExtendedInsertRows int
-
-	DataExport bool
-	DataPath   string
-	Region     string
-}
-
 // DumpTables will write all table data to a single writer.
 func (d *Client) DumpTables(w io.Writer, params providers.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
