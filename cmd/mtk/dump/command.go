@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gobwas/glob"
+	"github.com/skpr/mtk/internal/mysql/providers"
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/internal/mysql"
@@ -36,9 +37,9 @@ type Options struct {
 	ConfigFile         string
 	ExtendedInsertRows int
 
-	DataExport bool
-	DataPath   string
-	Region     string
+	Provider string
+	DataPath string
+	Region   string
 }
 
 func NewOptions() Options {
@@ -81,7 +82,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
 	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
 
-	cmd.Flags().BoolVar(&o.DataExport, "data-export", false, "Export data using SELECT INTO OUTFILE statements.")
+	cmd.Flags().StringVar(&o.Provider, "provider", "stdout", "Which provider should be used (either 'stdout' or 'rds'")
 	cmd.Flags().StringVar(&o.DataPath, "data-path", "", "The S3 bucket URI (e.g s3://my/bucket/path).")
 	cmd.Flags().StringVar(&o.Region, "region", "", "The S3 bucket region.")
 
@@ -118,9 +119,9 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 		return err
 	}
 
-	params := mysql.DumpParams{
+	params := providers.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		DataExport:         o.DataExport,
+		Provider:           o.Provider,
 		DataPath:           o.DataPath,
 		Region:             o.Region,
 	}
@@ -165,9 +166,9 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
 func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
-	params := mysql.DumpParams{
+	params := providers.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		DataExport:         o.DataExport,
+		Provider:           o.Provider,
 		DataPath:           o.DataPath,
 		Region:             o.Region,
 	}

@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/skpr/mtk/internal/mysql/providers"
 )
 
 const (
@@ -75,7 +76,7 @@ type DumpParams struct {
 }
 
 // DumpTables will write all table data to a single writer.
-func (d *Client) DumpTables(w io.Writer, params DumpParams) error {
+func (d *Client) DumpTables(w io.Writer, params providers.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
@@ -96,7 +97,7 @@ func (d *Client) DumpTables(w io.Writer, params DumpParams) error {
 }
 
 // DumpTable is convenient if you wish to coordinate a dump eg. Single file per table.
-func (d *Client) DumpTable(w io.Writer, table string, params DumpParams) error {
+func (d *Client) DumpTable(w io.Writer, table string, params providers.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}

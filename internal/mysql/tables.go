@@ -2,11 +2,14 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/gobwas/glob"
-
+	"github.com/skpr/mtk/internal/mysql/providers"
+	"github.com/skpr/mtk/internal/mysql/providers/rds"
+	"github.com/skpr/mtk/internal/mysql/providers/stdout"
 	"github.com/skpr/mtk/internal/sliceutils"
 )
 
@@ -67,105 +70,28 @@ func (d *Client) QueryTables() ([]string, error) {
 	return tables, nil
 }
 
-// QueryColumnsForTable for a given table.
-func (d *Client) QueryColumnsForTable(table string, params DumpParams) ([]string, error) {
-	var rows *sql.Rows
-
-	rows, err := d.DB.Query(fmt.Sprintf("SELECT * FROM `%s` LIMIT 1", table))
-	if err != nil {
-		return nil, err
+func (d *Client) getProviderClient(params providers.DumpParams) (providers.MTKProvider, error) {
+	switch params.Provider {
+	case "rds":
+		return rds.NewClient(d.DB, d.Logger), nil
+	case "stdout":
+		return stdout.NewClient(d.DB, d.Logger), nil
+	default:
+		return nil, errors.New("invalid provider")
 	}
-
-	defer rows.Close()
-
-	columns, err := rows.Columns()
-	if err != nil {
-		return nil, err
-	}
-
-	for k, column := range columns {
-		replacement, ok := params.SelectMap[strings.ToLower(table)][strings.ToLower(column)]
-		if ok {
-			columns[k] = fmt.Sprintf("%s AS `%s`", replacement, column)
-		} else {
-			columns[k] = fmt.Sprintf("`%s`", column)
-		}
-	}
-
-	return columns, nil
-}
-
-// GetSelectQueryForTable will return a complete SELECT query to fetch data from a table.
-func (d *Client) GetSelectQueryForTable(table string, params DumpParams) (string, error) {
-	cols, err := d.QueryColumnsForTable(table, params)
-	if err != nil {
-		return "", err
-	}
-
-	query := fmt.Sprintf("SELECT %s FROM `%s`", strings.Join(cols, ", "), table)
-
-	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
-		query = fmt.Sprintf("%s WHERE %s", query, where)
-	}
-
-	return query, nil
-}
-
-// GetSelectIntoOutFileQueryForTable will return a complete SELECT query to export data from a table.
-func (d *Client) GetSelectIntoOutFileQueryForTable(table string, params DumpParams) (string, error) {
-	cols, err := d.QueryColumnsForTable(table, params)
-	if err != nil {
-		return "", err
-	}
-
-	query := fmt.Sprintf("SELECT %s", strings.Join(cols, ", "))
-	query = fmt.Sprintf("%s FROM `%s`", query, table)
-
-	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
-		query = fmt.Sprintf("%s WHERE %s", query, where)
-	}
-
-	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, params.DataPath, table)
-	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
-	query = fmt.Sprintf("%s MANIFEST ON", query)
-	query = fmt.Sprintf("%s OVERWRITE ON", query)
-
-	importQuery, err := d.GetLoadDataQueryForTable(table, params.DataPath, params.Region)
-	if err != nil {
-		return "", err
-	}
-
-	fmt.Println(importQuery)
-	return query, nil
-}
-
-// GetLoadDataQueryForTable will return a complete SELECT query to fetch data from a table.
-func (d *Client) GetLoadDataQueryForTable(table, path, region string) (string, error) {
-	if table == "" {
-		return "", fmt.Errorf("error: no table specified")
-	}
-	if region == "" || len(strings.Split(region, "-")) != 3 {
-		return "", fmt.Errorf("error: region is not configured correctly")
-	}
-	path = strings.TrimPrefix(path, "s3://")
-	query := fmt.Sprintf("LOAD DATA FROM S3 MANIFEST 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s`", region, path, table, table)
-	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
-
-	return query, nil
 }
 
 // Helper function to get all data for a table.
-func (d *Client) selectAllDataForTable(table string, params DumpParams) (*sql.Rows, []string, error) {
-	query, err := d.GetSelectQueryForTable(table, params)
+func (d *Client) selectAllDataForTable(table string, params providers.DumpParams) (*sql.Rows, []string, error) {
+
+	client, err := d.getProviderClient(params)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if params.DataExport && params.DataPath != "" {
-		query, err = d.GetSelectIntoOutFileQueryForTable(table, params)
-		if err != nil {
-			return nil, nil, err
-		}
+	query, err := client.GetSelectQueryForTable(table, params)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	rows, err := d.DB.Query(query)
@@ -182,7 +108,7 @@ func (d *Client) selectAllDataForTable(table string, params DumpParams) (*sql.Ro
 }
 
 // GetRowCountForTable will return the number of rows using a SELECT statement.
-func (d *Client) GetRowCountForTable(table string, params DumpParams) (uint64, error) {
+func (d *Client) GetRowCountForTable(table string, params providers.DumpParams) (uint64, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
