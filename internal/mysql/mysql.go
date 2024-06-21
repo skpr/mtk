@@ -17,6 +17,7 @@ const (
 	OperationNoData = "nodata"
 )
 
+// Connection is a struct containing metadata for the database connection.
 type Connection struct {
 	Hostname string
 	Username string
@@ -26,6 +27,7 @@ type Connection struct {
 	MaxConn  int
 }
 
+// Open will Open a new database connection.
 func (o Connection) Open(database string) (*sql.DB, error) {
 	cfg := mysql.Config{
 		User:                 o.Username,

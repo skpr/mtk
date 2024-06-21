@@ -9,8 +9,11 @@ import (
 	"github.com/skpr/mtk/internal/mysql/providers"
 )
 
-type DumpParams struct {
-	providers.DumpParams
+// Client used for dumping a database and/or table.
+type Client struct {
+	providers.MTKProvider
+	DB     *sql.DB
+	Logger *log.Logger
 }
 
 // NewClient for dumping a full or single table from a database.
@@ -19,15 +22,6 @@ func NewClient(db *sql.DB, logger *log.Logger) *Client {
 		DB:     db,
 		Logger: logger,
 	}
-}
-
-// Client used for dumping a database and/or table.
-type Client struct {
-	providers.MTKProvider
-	DB     *sql.DB
-	Logger *log.Logger
-	// A field for caching a list of tables for this database.
-	cachedTables []string
 }
 
 // QueryColumnsForTable for a given table.

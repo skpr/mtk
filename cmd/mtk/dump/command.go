@@ -42,10 +42,12 @@ type Options struct {
 	Region   string
 }
 
+// NewOptions will return a new Options.
 func NewOptions() Options {
 	return Options{}
 }
 
+// NewCommand will return a new Cobra command.
 func NewCommand(conn *mysql.Connection) *cobra.Command {
 	o := NewOptions()
 
@@ -89,6 +91,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	return cmd
 }
 
+// Run will execute the dump command.
 func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, database, table string, cfg config.Rules) error {
 	db, err := conn.Open(database)
 	if err != nil {

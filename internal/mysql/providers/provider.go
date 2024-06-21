@@ -1,5 +1,6 @@
 package providers
 
+// MTKProvider is an interface implementing the required functionality for a Provider.
 type MTKProvider interface {
 	QueryColumnsForTable(table string, params DumpParams) ([]string, error)
 	GetSelectQueryForTable(table string, params DumpParams) (string, error)
@@ -13,7 +14,7 @@ type DumpParams struct {
 	UseTableLock       bool
 	ExtendedInsertRows int
 
-	Provider string
-	DataPath string
-	Region   string
+	Provider string // Provider configuration.
+	DataPath string // S3 URI configuration for RDS provider.
+	Region   string // Region configuration for RDS provider.
 }
