@@ -7,10 +7,10 @@ import (
 	"os"
 
 	"github.com/gobwas/glob"
-	"github.com/skpr/mtk/internal/mysql/providers"
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/internal/mysql"
+	"github.com/skpr/mtk/internal/mysql/providers"
 	"github.com/skpr/mtk/pkg/config"
 	"github.com/skpr/mtk/pkg/envar"
 )

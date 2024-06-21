@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/go-sql-driver/mysql"
+
 	"github.com/skpr/mtk/internal/mysql/providers"
 )
 

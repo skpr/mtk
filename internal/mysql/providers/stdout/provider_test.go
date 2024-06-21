@@ -7,9 +7,10 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/skpr/mtk/internal/mysql/mock"
 	"github.com/skpr/mtk/internal/mysql/providers"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestMySQLGetSelectQueryFor(t *testing.T) {

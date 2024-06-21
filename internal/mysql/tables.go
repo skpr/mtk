@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
+
 	"github.com/skpr/mtk/internal/mysql/providers"
 	"github.com/skpr/mtk/internal/mysql/providers/rds"
 	"github.com/skpr/mtk/internal/mysql/providers/stdout"
