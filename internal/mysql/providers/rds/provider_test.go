@@ -17,11 +17,10 @@ func TestMySQLGetExportSelectQueryFor(t *testing.T) {
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
 	query, err := dumper.GetSelectQueryForTable("table", providers.DumpParams{
-		SelectMap:  map[string]map[string]string{"table": {"c2": "NOW()"}},
-		WhereMap:   map[string]string{"table": "c1 > 0"},
-		DataExport: true,
-		DataPath:   "s3://path/to/bucket",
-		Region:     "ap-southeast-4",
+		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
+		WhereMap:  map[string]string{"table": "c1 > 0"},
+		DataPath:  "s3://path/to/bucket",
+		Region:    "ap-southeast-4",
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0 INTO OUTFILE S3 's3://path/to/bucket/table.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' MANIFEST ON OVERWRITE ON", query)
