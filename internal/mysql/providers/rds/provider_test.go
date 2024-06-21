@@ -33,6 +33,6 @@ func TestMySQLGetImportSelectQueryFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	query, err := dumper.GetLoadQueryForTable("table_name", "s3://path/to/bucket", "ap-southeast-4")
 	assert.Nil(t, err)
-	assert.Equal(t, "LOAD DATA FROM S3 FILE 'S3-ap-southeast-4://path/to/bucket/table_name.csv.manifest' INTO TABLE `table_name` FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+	assert.Equal(t, "LOAD DATA FROM S3 MANIFEST 'S3-ap-southeast-4://path/to/bucket/table_name.csv.manifest' INTO TABLE `table_name` FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 
 }
