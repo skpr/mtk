@@ -2,9 +2,8 @@ name: Functional Test
 
 on:
   pull_request:
-    branches: [ main ]
-  push:
-    branches: [ provider-model ]
+    types: [opened, synchronize, reopened]
+    branches: ['main']
 
 jobs:
   test:
