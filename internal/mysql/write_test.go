@@ -17,7 +17,7 @@ import (
 
 func TestMySQLDumpTableHeader(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
 	buffer := bytes.NewBuffer(make([]byte, 0))
@@ -30,7 +30,7 @@ func TestMySQLDumpTableHeader(t *testing.T) {
 
 func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))
 	buffer := bytes.NewBuffer(make([]byte, 0))
@@ -41,14 +41,14 @@ func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 
 func TestMySQLDumpTableLockWrite(t *testing.T) {
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(nil, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(nil, log.New(os.Stdout, "", 0), "stdout", "", "")
 	dumper.WriteTableLockWrite(buffer, "table")
 	assert.Contains(t, buffer.String(), "LOCK TABLES `table` WRITE;")
 }
 
 func TestMySQLDumpUnlockTables(t *testing.T) {
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(nil, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(nil, log.New(os.Stdout, "", 0), "stdout", "", "")
 	dumper.WriteUnlockTables(buffer)
 	assert.Contains(t, buffer.String(), "UNLOCK TABLES;")
 }
@@ -56,7 +56,7 @@ func TestMySQLDumpUnlockTables(t *testing.T) {
 func TestMySQLDumpTableData(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
 
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"id", "language"}).
@@ -81,7 +81,7 @@ func TestMySQLDumpTableData(t *testing.T) {
 func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout")
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
 	error := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
 	assert.Equal(t, error, dumper.WriteTableData(buffer, "table", provider.DumpParams{}))

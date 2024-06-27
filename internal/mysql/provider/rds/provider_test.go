@@ -14,9 +14,7 @@ import (
 
 func TestMySQLGetExportSelectQueryFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	dumper.Region = "ap-southheast-2"
-	dumper.DataPath = "s3://path/to/bucket"
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "ap-southheast-2", "s3://path/to/bucket")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
 	query, err := dumper.GetSelectQueryForTable("table", provider.DumpParams{
@@ -29,8 +27,8 @@ func TestMySQLGetExportSelectQueryFor(t *testing.T) {
 
 func TestMySQLGetLoadQueryFor(t *testing.T) {
 	db, _ := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	query, err := dumper.GetLoadQueryForTable("table_name", "s3://path/to/bucket", "ap-southeast-4")
+	dumper := NewClient(db, log.New(os.Stdout, "", 0), "ap-southeast-4", "s3://path/to/bucket")
+	query, err := dumper.GetLoadQueryForTable("table_name")
 	assert.Nil(t, err)
 	assert.Equal(t, "LOAD DATA FROM S3 MANIFEST 'S3-ap-southeast-4://path/to/bucket/table_name.csv.manifest' INTO TABLE `table_name` FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 

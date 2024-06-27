@@ -56,16 +56,23 @@ type Client struct {
 
 	// A field for caching a list of tables for this database.
 	cachedTables []string
+
 	// Provider configuration.
-	Provider string // Provider configuration.
+	Provider string
+	// For the AWS RDS Provider, specify the AWS Region.
+	Region string
+	// For the AWS RDS Provider, specify the S3 URI.
+	URI string
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger, provider string) *Client {
+func NewClient(db *sql.DB, logger *log.Logger, provider, region, uri string) *Client {
 	return &Client{
 		DB:       db,
 		Logger:   logger,
 		Provider: provider,
+		Region:   region,
+		URI:      uri,
 	}
 }
 

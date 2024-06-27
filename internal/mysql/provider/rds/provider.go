@@ -16,15 +16,17 @@ type Client struct {
 	DB     *sql.DB
 	Logger *log.Logger
 
-	DataPath string // S3 URI configuration
-	Region   string // Region configuration
+	Region string // Region configuration
+	URI    string // S3 URI configuration
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger) *Client {
+func NewClient(db *sql.DB, logger *log.Logger, region, uri string) *Client {
 	return &Client{
 		DB:     db,
 		Logger: logger,
+		Region: region,
+		URI:    uri,
 	}
 }
 
@@ -42,12 +44,12 @@ func (d *Client) GetSelectQueryForTable(table string, params provider.DumpParams
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 
-	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, d.DataPath, table)
+	query = fmt.Sprintf("%s INTO OUTFILE S3 '%s/%s.csv'", query, d.URI, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 	query = fmt.Sprintf("%s MANIFEST ON", query)
 	query = fmt.Sprintf("%s OVERWRITE ON", query)
 
-	importQuery, err := d.GetLoadQueryForTable(table, d.DataPath, d.Region)
+	importQuery, err := d.GetLoadQueryForTable(table)
 	if err != nil {
 		return "", err
 	}
@@ -57,15 +59,15 @@ func (d *Client) GetSelectQueryForTable(table string, params provider.DumpParams
 }
 
 // GetLoadQueryForTable will return a complete SELECT query to fetch data from a table.
-func (d *Client) GetLoadQueryForTable(table, path, region string) (string, error) {
+func (d *Client) GetLoadQueryForTable(table string) (string, error) {
 	if table == "" {
 		return "", fmt.Errorf("error: no table specified")
 	}
-	if region == "" || len(strings.Split(region, "-")) != 3 {
+	if d.Region == "" || len(strings.Split(d.Region, "-")) != 3 {
 		return "", fmt.Errorf("error: region is not configured correctly")
 	}
-	path = strings.TrimPrefix(path, "s3://")
-	query := fmt.Sprintf("LOAD DATA FROM S3 MANIFEST 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s`", region, path, table, table)
+	path := strings.TrimPrefix(d.URI, "s3://")
+	query := fmt.Sprintf("LOAD DATA FROM S3 MANIFEST 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s`", d.Region, path, table, table)
 	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
 
 	return query, nil

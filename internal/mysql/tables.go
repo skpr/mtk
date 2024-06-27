@@ -74,9 +74,7 @@ func (d *Client) QueryTables() ([]string, error) {
 func (d *Client) getProviderClient() (provider.Interface, error) {
 	switch d.Provider {
 	case "rds":
-		client := rds.NewClient(d.DB, d.Logger)
-		client.Region = ""
-		client.DataPath = ""
+		client := rds.NewClient(d.DB, d.Logger, d.Region, d.URI)
 		return client, nil
 	case "stdout":
 		return stdout.NewClient(d.DB, d.Logger), nil
