@@ -13,28 +13,41 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+
+      - name: Install schemalex
+        run: |
+          wget https://github.com/schemalex/schemalex/releases/download/v0.1.1/schemalex_linux_amd64.tar.gz
+          tar -xzvf schemalex_linux_amd64.tar.gz
+          sudo mv schemalex /usr/local/bin/
+
       - name: Set up MySQL
         run: |
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE test_db;' -uroot -proot
 
       - name: Import database
-        run: |
-          mysql -uroot -proot test_db < .github/workflows/functional-test.sql
+        run: mysql -uroot -proot test_db < .github/workflows/functional-test.sql
 
       - name: Verify database import
-        run: |
-          mysql -uroot -proot -e 'USE test_db; SHOW TABLES;'
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.21'
+        run: mysql -uroot -proot -e 'USE test_db; SHOW TABLES;'
 
       - name: Build MTK
         run: make build
 
       - name: Dump database
-        run: bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql;
+        run: bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
 
-      - name: cat database
+      - name: Clean database file
+        run: sed '$d' mtk-dump.sql > mtk-dump-clean.sql
+
+      - name: Cat database
+        run: cat mtk-dump-clean.sql
+
+      - name: Cat database
         run: cat mtk-dump.sql
+
+      - name: Generate diff
+        run: diff -u mtk-dump.sql mtk-dump-clean.sql
