@@ -84,7 +84,7 @@ func (o *Options) Run(logger *log.Logger, conn *mysql.Connection, database strin
 
 	defer db.Close()
 
-	client := mysql.NewClient(db, logger, "stdout", "", "")
+	client := mysql.NewClient(db, logger, "", "", "")
 
 	tables, err := client.QueryTables()
 	if err != nil {
