@@ -1,0 +1,30 @@
+name: Functional Test
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  setup-mysql:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up MySQL
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE testdb;' -uroot -proot
+
+      - name: Import database
+        run: |
+          mysql -uroot -proot testdb < import_test/db.sql
+
+      - name: Verify database import
+        run: |
+          mysql -uroot -proot -e 'USE testdb; SHOW TABLES;'
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+      - run: go test ./...
