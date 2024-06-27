@@ -3,6 +3,8 @@ name: Functional Test
 on:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ provider-model ]
 
 jobs:
   setup-mysql:
