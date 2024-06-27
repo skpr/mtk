@@ -58,8 +58,8 @@ func init() {
 	cmd.PersistentFlags().IntVar(&conn.MaxConn, "max-conn", envar.GetIntWithFallback(50, envar.MaxConn), "Sets the maximum number of open connections to the database")
 
 	cmd.PersistentFlags().StringVar(&providerName, "provider", envar.GetStringWithFallback("stdout", envar.Provider), "The provider to use (either 'stdout' or 'rds')")
-	cmd.PersistentFlags().StringVar(&awsRegion, "region", envar.Region, "The AWS region to use for S3 when connecting to the MySQL RDS instance")
-	cmd.PersistentFlags().StringVar(&s3Uri, "uri", envar.Uri, "The S3 URI to use for exporting to S3 when exporting data from the MySQL RDS instance")
+	cmd.PersistentFlags().StringVar(&awsRegion, "region", envar.GetStringWithFallback("", envar.Region), "The AWS region to use for S3 when connecting to the MySQL RDS instance")
+	cmd.PersistentFlags().StringVar(&s3Uri, "uri", envar.GetStringWithFallback("", envar.Uri), "The S3 URI to use for exporting to S3 when exporting data from the MySQL RDS instance")
 }
 
 func main() {
