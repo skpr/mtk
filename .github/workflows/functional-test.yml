@@ -17,12 +17,6 @@ jobs:
         with:
           go-version: '1.21'
 
-      - name: Install schemalex
-        run: |
-          wget https://github.com/schemalex/schemalex/releases/download/v0.1.1/schemalex_linux_amd64.tar.gz
-          tar -xzvf schemalex_linux_amd64.tar.gz
-          sudo mv schemalex /usr/local/bin/
-
       - name: Set up MySQL
         run: |
           sudo /etc/init.d/mysql start
