@@ -71,10 +71,13 @@ func (d *Client) QueryTables() ([]string, error) {
 	return tables, nil
 }
 
-func (d *Client) getProviderClient(params provider.DumpParams) (provider.Interface, error) {
+func (d *Client) getProviderClient() (provider.Interface, error) {
 	switch d.Provider {
 	case "rds":
-		return rds.NewClient(d.DB, d.Logger), nil
+		client := rds.NewClient(d.DB, d.Logger)
+		client.Region = ""
+		client.DataPath = ""
+		return client, nil
 	case "stdout":
 		return stdout.NewClient(d.DB, d.Logger), nil
 	default:
@@ -85,7 +88,7 @@ func (d *Client) getProviderClient(params provider.DumpParams) (provider.Interfa
 // Helper function to get all data for a table.
 func (d *Client) selectAllDataForTable(table string, params provider.DumpParams) (*sql.Rows, []string, error) {
 
-	client, err := d.getProviderClient(params)
+	client, err := d.getProviderClient()
 	if err != nil {
 		return nil, nil, err
 	}
