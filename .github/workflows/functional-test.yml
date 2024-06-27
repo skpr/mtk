@@ -45,5 +45,13 @@ jobs:
       - name: Import database
         run: mysql -uroot -proot test_db < mtk-dump-clean.sql
 
+      - name: Upload diff as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: file-diff
+          path: |
+            .github/workflows/functional-test.sql
+            mtk-dump-clean.sql
+
       - name: Generate diff
         run: diff -q .github/workflows/functional-test.sql mtk-dump-clean.sql
