@@ -16,15 +16,15 @@ jobs:
       - name: Set up MySQL
         run: |
           sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE testdb;' -uroot -proot
+          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
 
       - name: Import database
         run: |
-          mysql -uroot -proot testdb < import_test/db.sql
+          mysql -uroot -proot test_db < .github/workflows/functional-test.sql
 
       - name: Verify database import
         run: |
-          mysql -uroot -proot -e 'USE testdb; SHOW TABLES;'
+          mysql -uroot -proot -e 'USE test_db; SHOW TABLES;'
 
       - uses: actions/setup-go@v3
         with:
