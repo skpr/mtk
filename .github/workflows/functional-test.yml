@@ -44,4 +44,4 @@ jobs:
         run: cat mtk-dump.sql
 
       - name: Generate diff
-        run: diff -u mtk-dump.sql mtk-dump-clean.sql
+        run: diff -q mtk-dump.sql mtk-dump-clean.sql
