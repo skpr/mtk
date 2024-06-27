@@ -23,11 +23,6 @@ jobs:
       - name: Create Database
         run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
 
-      - name: Set up MySQL
-        run: |
-          sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
-
       - name: Import database
         run: mysql -uroot -proot test_db < .github/workflows/functional-test.sql
 
