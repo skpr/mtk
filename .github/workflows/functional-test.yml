@@ -26,9 +26,6 @@ jobs:
       - name: Import database
         run: mysql -uroot -proot test_db < .github/workflows/functional-test.sql
 
-      - name: Verify database import
-        run: mysql -uroot -proot -e 'USE test_db; SHOW TABLES;'
-
       - name: Build MTK
         run: make build
 
@@ -41,6 +38,9 @@ jobs:
       - name: Clean database file
         run: |
           sed '$d' mtk-dump.sql > mtk-dump-clean.sql
+
+      - name: Create Database
+        run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
 
       - name: Import database
         run: mysql -uroot -proot test_db < mtk-dump-clean.sql
