@@ -29,4 +29,12 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '1.21'
-      - run: go test ./...
+
+      - name: Build MTK
+        run: make build
+
+      - name: Dump database
+        run: bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql;
+
+      - name: cat database
+        run: cat mtk-dump.sql
