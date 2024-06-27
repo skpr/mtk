@@ -8,9 +8,9 @@ import (
 
 	"github.com/gobwas/glob"
 
-	"github.com/skpr/mtk/internal/mysql/providers"
-	"github.com/skpr/mtk/internal/mysql/providers/rds"
-	"github.com/skpr/mtk/internal/mysql/providers/stdout"
+	"github.com/skpr/mtk/internal/mysql/provider"
+	"github.com/skpr/mtk/internal/mysql/provider/rds"
+	"github.com/skpr/mtk/internal/mysql/provider/stdout"
 	"github.com/skpr/mtk/internal/sliceutils"
 )
 
@@ -71,8 +71,8 @@ func (d *Client) QueryTables() ([]string, error) {
 	return tables, nil
 }
 
-func (d *Client) getProviderClient(params providers.DumpParams) (providers.MTKProvider, error) {
-	switch params.Provider {
+func (d *Client) getProviderClient(params provider.DumpParams) (provider.Interface, error) {
+	switch d.Provider {
 	case "rds":
 		return rds.NewClient(d.DB, d.Logger), nil
 	case "stdout":
@@ -83,7 +83,7 @@ func (d *Client) getProviderClient(params providers.DumpParams) (providers.MTKPr
 }
 
 // Helper function to get all data for a table.
-func (d *Client) selectAllDataForTable(table string, params providers.DumpParams) (*sql.Rows, []string, error) {
+func (d *Client) selectAllDataForTable(table string, params provider.DumpParams) (*sql.Rows, []string, error) {
 
 	client, err := d.getProviderClient(params)
 	if err != nil {
@@ -109,7 +109,7 @@ func (d *Client) selectAllDataForTable(table string, params providers.DumpParams
 }
 
 // GetRowCountForTable will return the number of rows using a SELECT statement.
-func (d *Client) GetRowCountForTable(table string, params providers.DumpParams) (uint64, error) {
+func (d *Client) GetRowCountForTable(table string, params provider.DumpParams) (uint64, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {

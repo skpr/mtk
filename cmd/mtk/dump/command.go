@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/internal/mysql"
-	"github.com/skpr/mtk/internal/mysql/providers"
+	"github.com/skpr/mtk/internal/mysql/provider"
 	"github.com/skpr/mtk/pkg/config"
 	"github.com/skpr/mtk/pkg/envar"
 )
@@ -100,7 +100,7 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 
 	defer db.Close()
 
-	client := mysql.NewClient(db, logger)
+	client := mysql.NewClient(db, logger, o.Provider)
 
 	if table != "" {
 		return o.runDumpTable(w, client, table, cfg)
@@ -122,11 +122,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 		return err
 	}
 
-	params := providers.DumpParams{
+	params := provider.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		Provider:           o.Provider,
-		DataPath:           o.DataPath,
-		Region:             o.Region,
 	}
 
 	// Assign nodata tables.
@@ -169,11 +166,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
 func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
-	params := providers.DumpParams{
+	params := provider.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		Provider:           o.Provider,
-		DataPath:           o.DataPath,
-		Region:             o.Region,
 	}
 
 	// If this table matches an ignore glob, then skip it.

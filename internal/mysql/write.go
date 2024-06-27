@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/skpr/mtk/internal/mysql/providers"
+	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
 // WriteHeader is intended to be added at the beginning of a dump to manage database configuration.
@@ -103,7 +103,7 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 }
 
 // WriteTableHeader which contains debug information.
-func (d *Client) WriteTableHeader(w io.Writer, table string, params providers.DumpParams) (uint64, error) {
+func (d *Client) WriteTableHeader(w io.Writer, table string, params provider.DumpParams) (uint64, error) {
 	fmt.Fprintf(w, "\n--\n-- Data for table `%s`", table)
 
 	count, err := d.GetRowCountForTable(table, params)
@@ -117,7 +117,7 @@ func (d *Client) WriteTableHeader(w io.Writer, table string, params providers.Du
 }
 
 // WriteTableData for a specific table.
-func (d *Client) WriteTableData(w io.Writer, table string, params providers.DumpParams) error {
+func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpParams) error {
 	d.Logger.Println("Dumping data for table:", table)
 
 	rows, columns, err := d.selectAllDataForTable(table, params)
@@ -186,7 +186,7 @@ func (d *Client) WriteTableData(w io.Writer, table string, params providers.Dump
 }
 
 // WriteTables will create a script for all tables.
-func (d *Client) writeTables(w io.Writer, params providers.DumpParams) error {
+func (d *Client) writeTables(w io.Writer, params provider.DumpParams) error {
 	tables, err := d.QueryTables()
 	if err != nil {
 		return err
@@ -202,7 +202,7 @@ func (d *Client) writeTables(w io.Writer, params providers.DumpParams) error {
 }
 
 // WriteTable allows for a single table dump script.
-func (d *Client) writeTable(w io.Writer, table string, params providers.DumpParams) error {
+func (d *Client) writeTable(w io.Writer, table string, params provider.DumpParams) error {
 	if params.FilterMap[strings.ToLower(table)] == OperationIgnore {
 		return nil
 	}

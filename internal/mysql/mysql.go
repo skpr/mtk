@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 
-	"github.com/skpr/mtk/internal/mysql/providers"
+	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
 const (
@@ -53,20 +53,24 @@ func (o Connection) Open(database string) (*sql.DB, error) {
 type Client struct {
 	DB     *sql.DB
 	Logger *log.Logger
+
 	// A field for caching a list of tables for this database.
 	cachedTables []string
+	// Provider configuration.
+	Provider string // Provider configuration.
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger) *Client {
+func NewClient(db *sql.DB, logger *log.Logger, provider string) *Client {
 	return &Client{
-		DB:     db,
-		Logger: logger,
+		DB:       db,
+		Logger:   logger,
+		Provider: provider,
 	}
 }
 
 // DumpTables will write all table data to a single writer.
-func (d *Client) DumpTables(w io.Writer, params providers.DumpParams) error {
+func (d *Client) DumpTables(w io.Writer, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
@@ -87,7 +91,7 @@ func (d *Client) DumpTables(w io.Writer, params providers.DumpParams) error {
 }
 
 // DumpTable is convenient if you wish to coordinate a dump eg. Single file per table.
-func (d *Client) DumpTable(w io.Writer, table string, params providers.DumpParams) error {
+func (d *Client) DumpTable(w io.Writer, table string, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
