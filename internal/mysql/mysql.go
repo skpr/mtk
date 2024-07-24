@@ -7,6 +7,8 @@ import (
 	"log"
 
 	"github.com/go-sql-driver/mysql"
+
+	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 	OperationNoData = "nodata"
 )
 
+// Connection is a struct containing metadata for the database connection.
 type Connection struct {
 	Hostname string
 	Username string
@@ -25,6 +28,7 @@ type Connection struct {
 	MaxConn  int
 }
 
+// Open will Open a new database connection.
 func (o Connection) Open(database string) (*sql.DB, error) {
 	cfg := mysql.Config{
 		User:                 o.Username,
@@ -49,33 +53,31 @@ func (o Connection) Open(database string) (*sql.DB, error) {
 type Client struct {
 	DB     *sql.DB
 	Logger *log.Logger
+
 	// A field for caching a list of tables for this database.
 	cachedTables []string
+
+	// Provider configuration.
+	Provider string
+	// For the AWS RDS Provider, specify the AWS Region.
+	Region string
+	// For the AWS RDS Provider, specify the S3 URI.
+	URI string
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger) *Client {
+func NewClient(db *sql.DB, logger *log.Logger, provider, region, uri string) *Client {
 	return &Client{
-		DB:     db,
-		Logger: logger,
+		DB:       db,
+		Logger:   logger,
+		Provider: provider,
+		Region:   region,
+		URI:      uri,
 	}
 }
 
-// DumpParams is used to pass parameters to the Dump function.
-type DumpParams struct {
-	SelectMap          map[string]map[string]string
-	WhereMap           map[string]string
-	FilterMap          map[string]string
-	UseTableLock       bool
-	ExtendedInsertRows int
-
-	DataExport bool
-	DataPath   string
-	Region     string
-}
-
 // DumpTables will write all table data to a single writer.
-func (d *Client) DumpTables(w io.Writer, params DumpParams) error {
+func (d *Client) DumpTables(w io.Writer, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
@@ -96,7 +98,7 @@ func (d *Client) DumpTables(w io.Writer, params DumpParams) error {
 }
 
 // DumpTable is convenient if you wish to coordinate a dump eg. Single file per table.
-func (d *Client) DumpTable(w io.Writer, table string, params DumpParams) error {
+func (d *Client) DumpTable(w io.Writer, table string, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}

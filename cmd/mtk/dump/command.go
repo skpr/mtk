@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/internal/mysql"
+	"github.com/skpr/mtk/internal/mysql/provider"
 	"github.com/skpr/mtk/pkg/config"
 	"github.com/skpr/mtk/pkg/envar"
 )
@@ -31,21 +32,19 @@ const cmdExample = `
   # List all database tables and dump each table to a file.
   mtk table list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
 
-// Options is the commandline options for 'config' sub command
+// Options is the commandline options for 'dump' sub command
 type Options struct {
 	ConfigFile         string
 	ExtendedInsertRows int
-
-	DataExport bool
-	DataPath   string
-	Region     string
 }
 
+// NewOptions will return a new Options.
 func NewOptions() Options {
 	return Options{}
 }
 
-func NewCommand(conn *mysql.Connection) *cobra.Command {
+// NewCommand will return a new Cobra command.
+func NewCommand(conn *mysql.Connection, provider, region, s3uri string) *cobra.Command {
 	o := NewOptions()
 
 	cmd := &cobra.Command{
@@ -72,7 +71,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 				panic(err)
 			}
 
-			if err := o.Run(os.Stdout, logger, conn, database, table, cfg); err != nil {
+			if err := o.Run(os.Stdout, logger, conn, database, table, provider, region, s3uri, cfg); err != nil {
 				panic(err)
 			}
 		},
@@ -81,14 +80,11 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
 	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
 
-	cmd.Flags().BoolVar(&o.DataExport, "data-export", false, "Export data using SELECT INTO OUTFILE statements.")
-	cmd.Flags().StringVar(&o.DataPath, "data-path", "", "The S3 bucket URI (e.g s3://my/bucket/path).")
-	cmd.Flags().StringVar(&o.Region, "region", "", "The S3 bucket region.")
-
 	return cmd
 }
 
-func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, database, table string, cfg config.Rules) error {
+// Run will execute the dump command.
+func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, database, table, provider, region, uri string, cfg config.Rules) error {
 	db, err := conn.Open(database)
 	if err != nil {
 		return fmt.Errorf("failed to open database connection: %w", err)
@@ -96,7 +92,7 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 
 	defer db.Close()
 
-	client := mysql.NewClient(db, logger)
+	client := mysql.NewClient(db, logger, provider, region, uri)
 
 	if table != "" {
 		return o.runDumpTable(w, client, table, cfg)
@@ -118,11 +114,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 		return err
 	}
 
-	params := mysql.DumpParams{
+	params := provider.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		DataExport:         o.DataExport,
-		DataPath:           o.DataPath,
-		Region:             o.Region,
 	}
 
 	// Assign nodata tables.
@@ -165,11 +158,8 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
 func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
-	params := mysql.DumpParams{
+	params := provider.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
-		DataExport:         o.DataExport,
-		DataPath:           o.DataPath,
-		Region:             o.Region,
 	}
 
 	// If this table matches an ignore glob, then skip it.

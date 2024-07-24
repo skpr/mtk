@@ -14,6 +14,7 @@ const cmdExample = `
   # List all database tables.
   mtk table list <database>`
 
+// NewCommand will execute the table command.
 func NewCommand(conn *mysql.Connection) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                   "table",

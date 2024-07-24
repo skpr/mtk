@@ -32,7 +32,7 @@ const cmdExample = `
   # List all database tables and dump each table to a file.
   mtk table list <database> | xargs -I {} sh -c "mtk dump <database> '{}' > '{}.sql'"`
 
-// Options is the commandline options for 'config' sub command
+// Options is the commandline options for 'list' sub command
 type Options struct {
 	ConfigFile string
 }
@@ -84,7 +84,7 @@ func (o *Options) Run(logger *log.Logger, conn *mysql.Connection, database strin
 
 	defer db.Close()
 
-	client := mysql.NewClient(db, logger)
+	client := mysql.NewClient(db, logger, "", "", "")
 
 	tables, err := client.QueryTables()
 	if err != nil {
