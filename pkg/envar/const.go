@@ -2,7 +2,7 @@ package envar
 
 const (
 	// Region defines the default AWS Region configuration for use with RDS from the command line.
-	Region = "AWS_DEFAULT_REGION"
+	Region = "MTK_REGION"
 	// MaxConn defines the environment variable when using the command line.
 	MaxConn = "MTK_MAX_CONN"
 	// Config defines the environment variable when using the command line.
@@ -32,5 +32,5 @@ const (
 	// MySQLPort defines the environment variable when using the command line.
 	MySQLPort = "MYSQL_PORT"
 	// Uri defines the URI of the bucket path for use with the RDS provider from the command line.
-	Uri = "AWS_S3_URI"
+	Uri = "MTK_S3_URI"
 )
