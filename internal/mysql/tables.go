@@ -96,6 +96,8 @@ func (d *Client) selectAllDataForTable(table string, params provider.DumpParams)
 		return nil, nil, err
 	}
 
+	fmt.Printf("{'debug':{'table':%s,'params':'%s','query':%s}}\n", table, params, query)
+
 	rows, err := d.DB.Query(query)
 	if err != nil {
 		return nil, nil, err
