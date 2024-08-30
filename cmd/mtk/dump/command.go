@@ -44,7 +44,7 @@ func NewOptions() Options {
 }
 
 // NewCommand will return a new Cobra command.
-func NewCommand(conn *mysql.Connection, provider, region, s3uri string) *cobra.Command {
+func NewCommand(conn *mysql.Connection, provider, rdsRegion, rdsS3uri string) *cobra.Command {
 	o := NewOptions()
 
 	cmd := &cobra.Command{
@@ -71,7 +71,7 @@ func NewCommand(conn *mysql.Connection, provider, region, s3uri string) *cobra.C
 				panic(err)
 			}
 
-			if err := o.Run(os.Stdout, logger, conn, database, table, provider, region, s3uri, cfg); err != nil {
+			if err := o.Run(os.Stdout, logger, conn, database, table, provider, rdsRegion, rdsS3uri, cfg); err != nil {
 				panic(err)
 			}
 		},

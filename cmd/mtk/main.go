@@ -17,9 +17,9 @@ import (
 
 var (
 	conn         = new(mysql.Connection)
-	awsRegion    string
 	providerName string
-	s3Uri        string
+	rdsRegion    string
+	rdsS3Uri     string
 )
 
 const cmdExample = `
@@ -58,8 +58,10 @@ func init() {
 	cmd.PersistentFlags().IntVar(&conn.MaxConn, "max-conn", envar.GetIntWithFallback(50, envar.MaxConn), "Sets the maximum number of open connections to the database")
 
 	cmd.PersistentFlags().StringVar(&providerName, "provider", envar.GetStringWithFallback("stdout", envar.Provider), "The provider to use (either 'stdout' or 'rds')")
-	cmd.PersistentFlags().StringVar(&awsRegion, "region", envar.GetStringWithFallback("", envar.Region), "The AWS region to use for S3 when connecting to the MySQL RDS instance")
-	cmd.PersistentFlags().StringVar(&s3Uri, "uri", envar.GetStringWithFallback("", envar.Uri), "The S3 URI to use for exporting to S3 when exporting data from the MySQL RDS instance")
+
+	// RDS Provider Flags.
+	cmd.PersistentFlags().StringVar(&rdsRegion, "rds-region", envar.GetStringWithFallback("", envar.RDSRegion), "The AWS region to use for S3 when connecting to the MySQL RDS instance")
+	cmd.PersistentFlags().StringVar(&rdsS3Uri, "rds-s3-uri", envar.GetStringWithFallback("", envar.RDSS3Uri), "The S3 URI to use for exporting to S3 when exporting data from the MySQL RDS instance")
 }
 
 func main() {
@@ -77,7 +79,7 @@ func main() {
 	usageTemplate = re.ReplaceAllLiteralString(usageTemplate, `{{StyleHeading "Flags:"}}`)
 	cmd.SetUsageTemplate(usageTemplate)
 
-	cmd.AddCommand(dump.NewCommand(conn, providerName, awsRegion, s3Uri))
+	cmd.AddCommand(dump.NewCommand(conn, providerName, rdsRegion, rdsS3Uri))
 	cmd.AddCommand(table.NewCommand(conn))
 
 	if err := cmd.Execute(); err != nil {
