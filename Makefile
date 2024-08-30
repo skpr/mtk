@@ -15,7 +15,7 @@ build:
 
 # Run all lint checking with exit codes for CI.
 lint:
-	golint -set_exit_status `go list ./... | grep -v /vendor/`
+	revive -config revive.toml -set_exit_status ./cmd/... ./internal/... ./pkg/...
 
 # Run tests with coverage reporting.
 test:
