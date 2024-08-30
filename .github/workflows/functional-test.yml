@@ -1,0 +1,48 @@
+name: Functional Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: ['main']
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.21'
+
+      - name: Build MTK
+        run: make build
+
+      - name: MySQL:Start
+        run: sudo /etc/init.d/mysql start
+
+      - name: Database:Create
+        run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+
+      - name: Database:Import
+        run: mysql -uroot -proot test_db < .github/workflows/functional-test.sql
+
+      - name: Database:Dump
+        run: bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
+
+      - name: Database:Drop
+        run: mysql -e 'DROP DATABASE test_db;' -uroot -proot
+
+      - name: Database:Clean
+        # Remove the last line from the file - the dump timestamp.
+        run: sed '$d' mtk-dump.sql > mtk-dump-clean.sql
+
+      - name: Database:Recreate
+        run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+
+      - name: Database:Reimport
+        run: mysql -uroot -proot test_db < mtk-dump-clean.sql
+
+      - name: Compare results
+        run: diff -q .github/workflows/functional-test.sql mtk-dump-clean.sql
