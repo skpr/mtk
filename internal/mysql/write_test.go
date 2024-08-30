@@ -82,7 +82,7 @@ func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	buffer := bytes.NewBuffer(make([]byte, 0))
 	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
-	error := errors.New("fail")
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
-	assert.Equal(t, error, dumper.WriteTableData(buffer, "table", provider.DumpParams{}))
+	e := errors.New("fail")
+	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
+	assert.Equal(t, e, dumper.WriteTableData(buffer, "table", provider.DumpParams{}))
 }

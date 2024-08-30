@@ -29,12 +29,12 @@ func TestMySQLGetSelectQueryFor(t *testing.T) {
 func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	error := errors.New("broken")
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
+	e := errors.New("broken")
+	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
 	query, err := dumper.GetSelectQueryForTable("table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
 		WhereMap:  map[string]string{"table": "c1 > 0"},
 	})
-	assert.Equal(t, error, err)
+	assert.Equal(t, e, err)
 	assert.Equal(t, "", query)
 }

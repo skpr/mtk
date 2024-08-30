@@ -24,11 +24,11 @@ func TestMySQLGetColumnsForSelect(t *testing.T) {
 
 func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 	db, mock := mock.GetDB(t)
-	error := errors.New("broken")
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(error)
+	e := errors.New("broken")
+	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
 	columns, err := QueryColumnsForTable(db, "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"col2": "NOW()"}},
 	})
-	assert.Equal(t, err, error)
+	assert.Equal(t, err, e)
 	assert.Empty(t, columns)
 }
