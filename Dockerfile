@@ -1,4 +1,4 @@
-FROM golang:1.21 as build
+FROM golang:1.23 as build
 
 WORKDIR /go/src/github.com/skpr/mtk
 COPY . /go/src/github.com/skpr/mtk
