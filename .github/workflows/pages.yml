@@ -36,6 +36,7 @@ jobs:
 
       - name: Install and Build
         run: |
+          cd docs
           npm install --non-interactive
           npm run build
 
