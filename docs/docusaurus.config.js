@@ -100,11 +100,28 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Developed By',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/tutorial',
+                label: 'Previousnext',
+                to: 'https://www.previousnext.com.au',
+              },
+              {
+                label: 'Skpr',
+                to: 'https://www.skpr.com.au',
+              },
+            ],
+          },
+          {
+            title: 'Content',
+            items: [
+              {
+                label: 'Documentation',
+                href: '/docs/tutorial',
+              },
+              {
+                label: 'Blog',
+                to: '/blog',
               },
             ],
           },
@@ -112,12 +129,12 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
                 label: 'GitHub',
                 href: 'https://github.com/skpr/mtk',
+              },
+              {
+                label: 'Vectors provided by unDraw',
+                href: 'https://undraw.co',
               },
             ],
           },

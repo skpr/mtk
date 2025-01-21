@@ -5,7 +5,7 @@ import styles from './styles.module.css';
 const FeatureList = [
   {
     title: 'Seamless',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    Svg: require('@site/static/img/seamless.svg').default,
     description: (
       <>
         Seamlessly integrates with your existing MySQL workflows. If you're already using the mysqldump command, MTK serves as a direct, hassle-free replacement.
@@ -14,7 +14,7 @@ const FeatureList = [
   },
   {
     title: 'Secure',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    Svg: require('@site/static/img/secure.svg').default,
     description: (
       <>
         Empowering developers to dynamically ignore or rewrite content. Ensuring that sensitive data is not exposed as part of your developer workflows.
@@ -22,8 +22,8 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Performant',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'Fast',
+    Svg: require('@site/static/img/fast.svg').default,
     description: (
       <>
         Optimizes content on the fly, reducing build times and ensuring a fast, efficient workflow.
