@@ -8,7 +8,7 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-func getValue(raw string) (string, error) {
+func getValue(raw string, column_type ColumnType) (string, error) {
 	if raw == "" {
 		return "''", nil
 	}
@@ -18,8 +18,19 @@ func getValue(raw string) (string, error) {
 		return "", err
 	}
 
-	if govalidator.IsInt(raw) {
-		return escaped, nil
+	// List of types from https://dev.mysql.com/doc/refman/8.4/en/data-types.html (just the Numeric ones)
+	asNumber := []string{
+		"INTEGER", "INT", "SMALLINT", "TINYINT", "MEDIUMINT", "BIGINT",
+		"DECIMAL", "NUMERIC", "DEC", "FIXED",
+		"FLOAT", "DOUBLE", "REAL", "DOUBLE PRECISION",
+		"BIT", "BOOL"
+	}
+
+	// Only want to do this for numeric field types; it can cause problems when done for strings and JSON
+	if asNumber.Contains(column_type.DatabaseTypeName) {
+		if govalidator.IsInt(raw) {
+			return escaped, nil
+		}
 	}
 
 	return fmt.Sprintf("'%s'", escaped), nil
