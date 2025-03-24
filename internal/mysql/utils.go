@@ -23,8 +23,7 @@ func getValue(raw string, column_type ColumnType) (string, error) {
 		"INTEGER", "INT", "SMALLINT", "TINYINT", "MEDIUMINT", "BIGINT",
 		"DECIMAL", "NUMERIC", "DEC", "FIXED",
 		"FLOAT", "DOUBLE", "REAL", "DOUBLE PRECISION",
-		"BIT", "BOOL"
-	}
+		"BIT", "BOOL" }
 
 	// Only want to do this for numeric field types; it can cause problems when done for strings and JSON
 	if asNumber.Contains(column_type.DatabaseTypeName) {
