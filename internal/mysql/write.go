@@ -130,6 +130,9 @@ func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpP
 
 	// Get the column types
 	columntypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
 
 	// Set up and read the data, and print the INSERT statement
 	values := make([]*sql.RawBytes, len(columns))
@@ -173,7 +176,7 @@ func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpP
 			val := "NULL"
 
 			if col != nil {
-				val, err = getValue(string(*col), columntypes[columnindex])
+				val, err = getValue(string(*col), columntypes[columnindex].databaseType)
 				if err != nil {
 					return err
 				}

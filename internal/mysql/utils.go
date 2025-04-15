@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"database/sql"
 
 	"github.com/asaskevich/govalidator"
 )
 
-func getValue(raw string, theColumnType ColumnType) (string, error) {
+func getValue(raw string, columnType string) (string, error) {
 	if raw == "" {
 		return "''", nil
 	}
@@ -28,7 +27,7 @@ func getValue(raw string, theColumnType ColumnType) (string, error) {
 		"BIT", "BOOL" }
 
 	// Only want to do this for numeric field types; it can cause problems when done for strings and JSON
-	if slices.Contains(asNumber, theColumnType.DatabaseTypeName) {
+	if slices.Contains(asNumber, columnType) {
 		if govalidator.IsInt(raw) {
 			return escaped, nil
 		}
