@@ -7,15 +7,19 @@ import (
 )
 
 func TestGetValue(t *testing.T) {
-	val, err := getValue("")
+	val, err := getValue("", "TEXT")
 	assert.NoError(t, err)
 	assert.Equal(t, "''", val)
 
-	val, err = getValue("1")
+	val, err = getValue("1", "INTEGER")
 	assert.NoError(t, err)
 	assert.Equal(t, "1", val)
 
-	val, err = getValue("foo")
+	val, err = getValue("1", "TEXT")
+	assert.NoError(t, err)
+	assert.Equal(t, "'1'", val)
+
+	val, err = getValue("foo", "TEXT")
 	assert.NoError(t, err)
 	assert.Equal(t, "'foo'", val)
 }
