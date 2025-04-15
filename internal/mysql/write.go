@@ -176,7 +176,7 @@ func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpP
 			val := "NULL"
 
 			if col != nil {
-				val, err = getValue(string(*col), columntypes[columnindex].databaseType)
+				val, err = getValue(string(*col), columntypes[columnindex].DatabaseTypeName())
 				if err != nil {
 					return err
 				}
