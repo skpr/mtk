@@ -156,7 +156,7 @@ func (o *Options) runDumpTables(ctx context.Context, w io.Writer, client *mysql.
 	return client.DumpTables(ctx, w, params)
 }
 
-// Helper function to dump a single table.
+// RunDumpTable dumps a single table.
 // This function builds a list of DumpParams to that are specific to this table to avoid any performance bottlenecks.
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
