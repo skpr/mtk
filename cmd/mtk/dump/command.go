@@ -98,7 +98,7 @@ func (o *Options) Run(ctx context.Context, w io.Writer, logger *log.Logger, conn
 	client := mysql.NewClient(db, logger, provider, region, uri)
 
 	if table != "" {
-		return o.runDumpTable(ctx, w, client, table, cfg)
+		return RunDumpTable(ctx, w, client, table, o.ExtendedInsertRows, cfg)
 	}
 
 	return o.runDumpTables(ctx, w, client, cfg)
@@ -156,13 +156,13 @@ func (o *Options) runDumpTables(ctx context.Context, w io.Writer, client *mysql.
 	return client.DumpTables(ctx, w, params)
 }
 
-// Helper function to dump a single table.
+// RunDumpTable dumps a single table.
 // This function builds a list of DumpParams to that are specific to this table to avoid any performance bottlenecks.
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
-func (o *Options) runDumpTable(ctx context.Context, w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
+func RunDumpTable(ctx context.Context, w io.Writer, client *mysql.Client, table string, extendedInsertRows int, cfg config.Rules) error {
 	params := provider.DumpParams{
-		ExtendedInsertRows: o.ExtendedInsertRows,
+		ExtendedInsertRows: extendedInsertRows,
 	}
 
 	// If this table matches an ignore glob, then skip it.
