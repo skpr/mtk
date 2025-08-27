@@ -22,27 +22,40 @@ jobs:
       - name: Start MySQL
         run: sudo /etc/init.d/mysql start
 
-      - name: Create Database
-        run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+      - name: "Test: Dump"
+        run: |
+          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+          mysql -uroot -proot test_db < .github/workflows/functional-test/fixtures/dump/db.sql
+          bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
+          mysql -e 'DROP DATABASE test_db;' -uroot -proot
+          sed '$d' mtk-dump.sql > mtk-dump-clean.sql
+          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+          mysql -uroot -proot test_db < mtk-dump-clean.sql
+          diff -q .github/workflows/functional-test/fixtures/dump/db.sql mtk-dump-clean.sql
 
-      - name: Import Database
-        run: mysql -uroot -proot test_db < .github/workflows/functional-test.sql
+      - name: "Test: Dump Tables"
+        run: |
+          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+          # Reusing the same fixture as our dump test
+          mysql -uroot -proot test_db < .github/workflows/functional-test/fixtures/dump/db.sql
+          mkdir /tmp/dumps
+          bin/mtk-linux-amd64 dump-tables test_db --port=3306 --user=root --password=root --host=127.0.0.1 /tmp/dumps
+          mysql -e 'DROP DATABASE test_db;' -uroot -proot
+          sed '$d' /tmp/dumps/products.sql > /tmp/dumps/products.sql
+          sed '$d' /tmp/dumps/orders.sql > /tmp/dumps/orders.sql
+          sed '$d' /tmp/dumps/users.sql > /tmp/dumps/users.sql
+          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+          mysql -uroot -proot test_db < /tmp/dumps/products.sql
+          mysql -uroot -proot test_db < /tmp/dumps/orders.sql
+          mysql -uroot -proot test_db < /tmp/dumps/users.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/products.sql /tmp/dumps/products.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/orders.sql /tmp/dumps/orders.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/users.sql /tmp/dumps/users.sql
 
-      - name: Dump Database
-        run: bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
-
-      - name: Drop Database
-        run: mysql -e 'DROP DATABASE test_db;' -uroot -proot
-
-      - name: Clean Database
-        # Remove the last line from the file - the dump timestamp.
-        run: sed '$d' mtk-dump.sql > mtk-dump-clean.sql
-
-      - name: Recreate Database
-        run: mysql -e 'CREATE DATABASE test_db;' -uroot -proot
-
-      - name: Reimport Database
-        run: mysql -uroot -proot test_db < mtk-dump-clean.sql
-
-      - name: Compare Results
-        run: diff -q .github/workflows/functional-test.sql mtk-dump-clean.sql
+      - name: 📋 Archive Output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sql-dumps
+          path: |
+            /tmp/dumps
