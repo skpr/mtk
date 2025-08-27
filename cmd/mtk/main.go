@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/skpr/mtk/cmd/mtk/dump"
+	dumptables "github.com/skpr/mtk/cmd/mtk/dump-tables"
 	"github.com/skpr/mtk/cmd/mtk/table"
 	"github.com/skpr/mtk/internal/mysql"
 	"github.com/skpr/mtk/pkg/envar"
@@ -79,6 +80,7 @@ func main() {
 	cmd.SetUsageTemplate(usageTemplate)
 
 	cmd.AddCommand(dump.NewCommand(conn, providerName, rdsRegion, rdsS3Uri))
+	cmd.AddCommand(dumptables.NewCommand(conn, providerName, rdsRegion, rdsS3Uri))
 	cmd.AddCommand(table.NewCommand(conn))
 
 	if err := cmd.Execute(); err != nil {
