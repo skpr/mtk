@@ -51,11 +51,3 @@ jobs:
           diff -q .github/workflows/functional-test/fixtures/dump-tables/products.sql /tmp/dumps/products-clean.sql
           diff -q .github/workflows/functional-test/fixtures/dump-tables/orders.sql /tmp/dumps/orders-clean.sql
           diff -q .github/workflows/functional-test/fixtures/dump-tables/users.sql /tmp/dumps/users-clean.sql
-
-      - name: 📋 Archive Output
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: sql-dumps
-          path: |
-            /tmp/dumps
