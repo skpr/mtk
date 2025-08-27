@@ -26,7 +26,6 @@ type Connection struct {
 	Password string
 	Protocol string
 	Port     int32
-	MaxConn  int
 }
 
 // Open will Open a new database connection.
