@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -78,7 +79,7 @@ func (d *Client) WriteUnlockTables(w io.Writer) {
 }
 
 // WriteCreateTable script used when dumping a database.
-func (d *Client) WriteCreateTable(w io.Writer, table string) error {
+func (d *Client) WriteCreateTable(ctx context.Context, w io.Writer, table string) error {
 	d.Logger.Println("Dumping structure for table:", table)
 
 	fmt.Fprintf(w, "\n--\n-- Structure for table `%s`\n--\n\n", table)
@@ -87,7 +88,7 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 	fmt.Fprintln(w, "/*!40101 SET @saved_cs_client     = @@character_set_client */;")
 	fmt.Fprintln(w, "/*!40101 SET character_set_client = utf8 */;")
 
-	row := d.DB.QueryRow(fmt.Sprintf("SHOW CREATE TABLE `%s`", table))
+	row := d.Conn.QueryRowContext(ctx, fmt.Sprintf("SHOW CREATE TABLE `%s`", table))
 
 	var name, ddl string
 
@@ -103,10 +104,10 @@ func (d *Client) WriteCreateTable(w io.Writer, table string) error {
 }
 
 // WriteTableHeader which contains debug information.
-func (d *Client) WriteTableHeader(w io.Writer, table string, params provider.DumpParams) (uint64, error) {
+func (d *Client) WriteTableHeader(ctx context.Context, w io.Writer, table string, params provider.DumpParams) (uint64, error) {
 	fmt.Fprintf(w, "\n--\n-- Data for table `%s`", table)
 
-	count, err := d.GetRowCountForTable(table, params)
+	count, err := d.GetRowCountForTable(ctx, table, params)
 	if err != nil {
 		return 0, err
 	}
@@ -117,10 +118,10 @@ func (d *Client) WriteTableHeader(w io.Writer, table string, params provider.Dum
 }
 
 // WriteTableData for a specific table.
-func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpParams) error {
+func (d *Client) WriteTableData(ctx context.Context, w io.Writer, table string, params provider.DumpParams) error {
 	d.Logger.Println("Dumping data for table:", table)
 
-	rows, columns, err := d.selectAllDataForTable(table, params)
+	rows, columns, err := d.selectAllDataForTable(ctx, table, params)
 	if err != nil {
 		return err
 	}
@@ -194,14 +195,14 @@ func (d *Client) WriteTableData(w io.Writer, table string, params provider.DumpP
 }
 
 // WriteTables will create a script for all tables.
-func (d *Client) writeTables(w io.Writer, params provider.DumpParams) error {
-	tables, err := d.QueryTables()
+func (d *Client) writeTables(ctx context.Context, w io.Writer, params provider.DumpParams) error {
+	tables, err := d.QueryTables(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, table := range tables {
-		if err := d.writeTable(w, table, params); err != nil {
+		if err := d.writeTable(ctx, w, table, params); err != nil {
 			return err
 		}
 	}
@@ -210,23 +211,23 @@ func (d *Client) writeTables(w io.Writer, params provider.DumpParams) error {
 }
 
 // WriteTable allows for a single table dump script.
-func (d *Client) writeTable(w io.Writer, table string, params provider.DumpParams) error {
+func (d *Client) writeTable(ctx context.Context, w io.Writer, table string, params provider.DumpParams) error {
 	if params.FilterMap[strings.ToLower(table)] == OperationIgnore {
 		return nil
 	}
 
 	skipData := params.FilterMap[strings.ToLower(table)] == OperationNoData
 	if !skipData && params.UseTableLock {
-		if _, err := d.LockTableReading(table); err != nil {
+		if _, err := d.LockTableReading(ctx, table); err != nil {
 			return err
 		}
 
-		if _, err := d.FlushTable(table); err != nil {
+		if _, err := d.FlushTable(ctx, table); err != nil {
 			return err
 		}
 	}
 
-	if err := d.WriteCreateTable(w, table); err != nil {
+	if err := d.WriteCreateTable(ctx, w, table); err != nil {
 		return err
 	}
 
@@ -234,7 +235,7 @@ func (d *Client) writeTable(w io.Writer, table string, params provider.DumpParam
 		return nil
 	}
 
-	cnt, err := d.WriteTableHeader(w, table, params)
+	cnt, err := d.WriteTableHeader(ctx, w, table, params)
 	if err != nil {
 		return err
 	}
@@ -247,7 +248,7 @@ func (d *Client) writeTable(w io.Writer, table string, params provider.DumpParam
 	d.WriteTableDisableKeys(w, table)
 	d.WriteAutoCommitOff(w)
 
-	if err := d.WriteTableData(w, table, params); err != nil {
+	if err := d.WriteTableData(ctx, w, table, params); err != nil {
 		return fmt.Errorf("failed to write table data: %w", err)
 	}
 

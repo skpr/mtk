@@ -1,6 +1,7 @@
 package rds
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -13,7 +14,7 @@ import (
 // Client used for dumping a database and/or table.
 type Client struct {
 	provider.Interface
-	DB     *sql.DB
+	Conn   *sql.Conn
 	Logger *log.Logger
 
 	Region string // Region configuration
@@ -21,9 +22,9 @@ type Client struct {
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger, region, uri string) *Client {
+func NewClient(conn *sql.Conn, logger *log.Logger, region, uri string) *Client {
 	return &Client{
-		DB:     db,
+		Conn:   conn,
 		Logger: logger,
 		Region: region,
 		URI:    uri,
@@ -31,8 +32,8 @@ func NewClient(db *sql.DB, logger *log.Logger, region, uri string) *Client {
 }
 
 // GetSelectQueryForTable will return a complete SELECT query to export data from a table.
-func (d *Client) GetSelectQueryForTable(table string, params provider.DumpParams) (string, error) {
-	cols, err := providerutils.QueryColumnsForTable(d.DB, table, params)
+func (d *Client) GetSelectQueryForTable(ctx context.Context, table string, params provider.DumpParams) (string, error) {
+	cols, err := providerutils.QueryColumnsForTable(ctx, d.Conn, table, params)
 	if err != nil {
 		return "", err
 	}

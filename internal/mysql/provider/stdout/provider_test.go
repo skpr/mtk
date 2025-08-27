@@ -1,6 +1,7 @@
 package stdout
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
@@ -18,7 +19,7 @@ func TestMySQLGetSelectQueryFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
-	query, err := dumper.GetSelectQueryForTable("table", provider.DumpParams{
+	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
 		WhereMap:  map[string]string{"table": "c1 > 0"},
 	})
@@ -31,7 +32,7 @@ func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0))
 	e := errors.New("broken")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
-	query, err := dumper.GetSelectQueryForTable("table", provider.DumpParams{
+	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
 		WhereMap:  map[string]string{"table": "c1 > 0"},
 	})

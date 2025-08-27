@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestMySQLGetColumnsForSelect(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"col1", "col2", "col3"}).AddRow("a", "b", "c"))
-	columns, err := QueryColumnsForTable(db, "table", provider.DumpParams{
+	columns, err := QueryColumnsForTable(context.TODO(), db, "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"col2": "NOW()"}},
 	})
 	assert.Nil(t, err)
@@ -26,7 +27,7 @@ func TestMySQLGetColumnsForSelectHandlingErrorWhenQuerying(t *testing.T) {
 	db, mock := mock.GetDB(t)
 	e := errors.New("broken")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
-	columns, err := QueryColumnsForTable(db, "table", provider.DumpParams{
+	columns, err := QueryColumnsForTable(context.TODO(), db, "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"col2": "NOW()"}},
 	})
 	assert.Equal(t, err, e)

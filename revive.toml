@@ -13,7 +13,6 @@ warningCode = 0
 [rule.error-naming]
 [rule.exported]
 [rule.increment-decrement]
-[rule.var-naming]
 [rule.var-declaration]
 [rule.range]
 [rule.receiver-naming]
@@ -28,5 +27,6 @@ warningCode = 0
 
 # These should be uncommented and resolve in
 # future pull requests.
+# [rule.var-naming]
 # [rule.package-comments]
 # [rule.unused-parameter]
