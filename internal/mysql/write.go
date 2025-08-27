@@ -128,6 +128,14 @@ func (d *Client) WriteTableData(ctx context.Context, w io.Writer, table string, 
 
 	defer rows.Close()
 
+
+	// Get the column types
+	columntypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+
+	// Set up and read the data, and print the INSERT statement
 	values := make([]*sql.RawBytes, len(columns))
 	scanArgs := make([]interface{}, len(values))
 
@@ -165,11 +173,11 @@ func (d *Client) WriteTableData(ctx context.Context, w io.Writer, table string, 
 
 		var vals []string
 
-		for _, col := range values {
+		for columnindex, col := range values {
 			val := "NULL"
 
 			if col != nil {
-				val, err = getValue(string(*col))
+				val, err = getValue(string(*col), strings.ToUpper(columntypes[columnindex].DatabaseTypeName()))
 				if err != nil {
 					return err
 				}

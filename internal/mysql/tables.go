@@ -85,8 +85,10 @@ func (d *Client) getProviderClient() (provider.Interface, error) {
 }
 
 // Helper function to get all data for a table.
+// *sql.Rows:	Rows
+// []string:	Columns
+// error:	Error
 func (d *Client) selectAllDataForTable(ctx context.Context, table string, params provider.DumpParams) (*sql.Rows, []string, error) {
-
 	client, err := d.getProviderClient()
 	if err != nil {
 		return nil, nil, err
