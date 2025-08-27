@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -29,7 +30,7 @@ type Connection struct {
 }
 
 // Open will Open a new database connection.
-func (o Connection) Open(database string) (*sql.DB, error) {
+func (o Connection) Open(ctx context.Context, database string, singleTransaction bool) (*sql.Conn, error) {
 	cfg := mysql.Config{
 		User:                 o.Username,
 		Passwd:               o.Password,
@@ -44,14 +45,27 @@ func (o Connection) Open(database string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(o.MaxConn)
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	return db, nil
+	// Match mysqldump --single-transaction behavior (REPEATABLE READ + consistent snapshot, read-only).
+	if singleTransaction {
+		if _, err := conn.ExecContext(ctx, "SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ"); err != nil {
+			log.Fatal(err)
+		}
+		if _, err := conn.ExecContext(ctx, "START TRANSACTION WITH CONSISTENT SNAPSHOT, READ ONLY"); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return conn, nil
 }
 
 // Client used for dumping a database and/or table.
 type Client struct {
-	DB     *sql.DB
+	Conn   *sql.Conn
 	Logger *log.Logger
 
 	// A field for caching a list of tables for this database.
@@ -66,9 +80,9 @@ type Client struct {
 }
 
 // NewClient for dumping a full or single table from a database.
-func NewClient(db *sql.DB, logger *log.Logger, provider, region, uri string) *Client {
+func NewClient(conn *sql.Conn, logger *log.Logger, provider, region, uri string) *Client {
 	return &Client{
-		DB:       db,
+		Conn:     conn,
 		Logger:   logger,
 		Provider: provider,
 		Region:   region,
@@ -77,12 +91,12 @@ func NewClient(db *sql.DB, logger *log.Logger, provider, region, uri string) *Cl
 }
 
 // DumpTables will write all table data to a single writer.
-func (d *Client) DumpTables(w io.Writer, params provider.DumpParams) error {
+func (d *Client) DumpTables(ctx context.Context, w io.Writer, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
 
-	if err := d.writeTables(w, params); err != nil {
+	if err := d.writeTables(ctx, w, params); err != nil {
 		return fmt.Errorf("failed to write tables: %w", err)
 	}
 
@@ -98,12 +112,12 @@ func (d *Client) DumpTables(w io.Writer, params provider.DumpParams) error {
 }
 
 // DumpTable is convenient if you wish to coordinate a dump eg. Single file per table.
-func (d *Client) DumpTable(w io.Writer, table string, params provider.DumpParams) error {
+func (d *Client) DumpTable(ctx context.Context, w io.Writer, table string, params provider.DumpParams) error {
 	if err := d.WriteHeader(w); err != nil {
 		return fmt.Errorf("failed to write header: %w", err)
 	}
 
-	if err := d.writeTable(w, table, params); err != nil {
+	if err := d.writeTable(ctx, w, table, params); err != nil {
 		return fmt.Errorf("failed to write tables: %w", err)
 	}
 

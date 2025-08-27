@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -9,10 +10,10 @@ import (
 )
 
 // QueryColumnsForTable for a given table.
-func QueryColumnsForTable(database *sql.DB, table string, params provider.DumpParams) ([]string, error) {
+func QueryColumnsForTable(ctx context.Context, conn *sql.Conn, table string, params provider.DumpParams) ([]string, error) {
 	var rows *sql.Rows
 
-	rows, err := database.Query(fmt.Sprintf("SELECT * FROM `%s` LIMIT 1", table))
+	rows, err := conn.QueryContext(ctx, fmt.Sprintf("SELECT * FROM `%s` LIMIT 1", table))
 	if err != nil {
 		return nil, err
 	}

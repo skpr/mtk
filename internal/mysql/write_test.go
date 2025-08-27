@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"log"
 	"os"
@@ -21,7 +22,7 @@ func TestMySQLDumpTableHeader(t *testing.T) {
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(1234))
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	count, err := dumper.WriteTableHeader(buffer, "table", provider.DumpParams{})
+	count, err := dumper.WriteTableHeader(context.TODO(), buffer, "table", provider.DumpParams{})
 	assert.Equal(t, uint64(1234), count)
 	assert.Nil(t, err)
 	assert.Contains(t, buffer.String(), "Data for table `table`")
@@ -34,7 +35,7 @@ func TestMySQLDumpTableHeaderHandlingError(t *testing.T) {
 	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM `table`").WillReturnRows(
 		sqlmock.NewRows([]string{"COUNT(*)"}).AddRow(nil))
 	buffer := bytes.NewBuffer(make([]byte, 0))
-	count, err := dumper.WriteTableHeader(buffer, "table", provider.DumpParams{})
+	count, err := dumper.WriteTableHeader(context.TODO(), buffer, "table", provider.DumpParams{})
 	assert.Equal(t, uint64(0), count)
 	assert.NotNil(t, err)
 }
@@ -71,7 +72,7 @@ func TestMySQLDumpTableData(t *testing.T) {
 			AddRow(5, "Rust").
 			AddRow(6, "Closure"))
 
-	assert.Nil(t, dumper.WriteTableData(buffer, "table", provider.DumpParams{
+	assert.Nil(t, dumper.WriteTableData(context.TODO(), buffer, "table", provider.DumpParams{
 		ExtendedInsertRows: 2}))
 
 	assert.Equal(t, strings.Count(buffer.String(), "INSERT INTO `table` VALUES"), 3)
@@ -84,5 +85,5 @@ func TestMySQLDumpTableDataHandlingErrorFromSelectAllDataFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0), "stdout", "", "")
 	e := errors.New("fail")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
-	assert.Equal(t, e, dumper.WriteTableData(buffer, "table", provider.DumpParams{}))
+	assert.Equal(t, e, dumper.WriteTableData(context.TODO(), buffer, "table", provider.DumpParams{}))
 }
