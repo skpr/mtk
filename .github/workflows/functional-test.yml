@@ -40,6 +40,16 @@ jobs:
           mysql -uroot -proot dump_files_test < .github/workflows/functional-test/fixtures/dump/db.sql
           mkdir /tmp/dumps
           bin/mtk-linux-amd64 dump-tables dump_files_test --port=3306 --user=root --password=root --host=127.0.0.1 /tmp/dumps
+          sed '$d' /tmp/dumps/products.sql > /tmp/dumps/products-clean.sql
+          sed '$d' /tmp/dumps/orders.sql > /tmp/dumps/orders-clean.sql
+          sed '$d' /tmp/dumps/users.sql > /tmp/dumps/users-clean.sql
+          mysql -e 'CREATE DATABASE dump_files_test;' -uroot -proot
+          mysql -uroot -proot dump_files_test < /tmp/dumps/products-clean.sql
+          mysql -uroot -proot dump_files_test < /tmp/dumps/orders-clean.sql
+          mysql -uroot -proot dump_files_test < /tmp/dumps/users-clean.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/products.sql /tmp/dumps/products-clean.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/orders.sql /tmp/dumps/orders-clean.sql
+          diff -q .github/workflows/functional-test/fixtures/dump-tables/users.sql /tmp/dumps/users-clean.sql
 
       - name: 📋 Archive Output
         uses: actions/upload-artifact@v4
