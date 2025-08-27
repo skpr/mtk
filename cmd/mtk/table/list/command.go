@@ -1,6 +1,7 @@
 package list
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -34,7 +35,8 @@ const cmdExample = `
 
 // Options is the commandline options for 'list' sub command
 type Options struct {
-	ConfigFile string
+	ConfigFile        string
+	SingleTransaction bool
 }
 
 // NewOptions returns a new Options struct.
@@ -61,7 +63,7 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 			}
 
 			for _, database := range args {
-				if err := o.Run(logger, conn, database, cfg.Ignore); err != nil {
+				if err := o.Run(cmd.Context(), logger, conn, database, cfg.Ignore); err != nil {
 					return err
 				}
 			}
@@ -71,13 +73,14 @@ func NewCommand(conn *mysql.Connection) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
+	cmd.Flags().BoolVar(&o.SingleTransaction, "single-transaction", true, "No changes that occur to InnoDB tables during the dump will be included in the dump")
 
 	return cmd
 }
 
 // Run the command which will list all tables.
-func (o *Options) Run(logger *log.Logger, conn *mysql.Connection, database string, exclude []string) error {
-	db, err := conn.Open(database)
+func (o *Options) Run(ctx context.Context, logger *log.Logger, conn *mysql.Connection, database string, exclude []string) error {
+	db, err := conn.Open(ctx, database, o.SingleTransaction)
 	if err != nil {
 		return fmt.Errorf("failed to open database connection: %w", err)
 	}
@@ -86,12 +89,12 @@ func (o *Options) Run(logger *log.Logger, conn *mysql.Connection, database strin
 
 	client := mysql.NewClient(db, logger, "", "", "")
 
-	tables, err := client.QueryTables()
+	tables, err := client.QueryTables(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to list tables: %w", err)
 	}
 
-	skip, err := client.ListTablesByGlob(exclude)
+	skip, err := client.ListTablesByGlob(ctx, exclude)
 	if err != nil {
 		return fmt.Errorf("failed to list tables to skip: %w", err)
 	}

@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
@@ -9,8 +10,10 @@ import (
 )
 
 // GetDB which can be used for testing purposes.
-func GetDB(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+func GetDB(t *testing.T) (*sql.Conn, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 	assert.Nil(t, err)
-	return db, mock
+	conn, err := db.Conn(context.TODO())
+	assert.Nil(t, err)
+	return conn, mock
 }

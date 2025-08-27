@@ -1,6 +1,7 @@
 package rds
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -17,7 +18,7 @@ func TestMySQLGetExportSelectQueryFor(t *testing.T) {
 	dumper := NewClient(db, log.New(os.Stdout, "", 0), "ap-southheast-2", "s3://path/to/bucket")
 	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
 		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
-	query, err := dumper.GetSelectQueryForTable("table", provider.DumpParams{
+	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
 		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
 		WhereMap:  map[string]string{"table": "c1 > 0"},
 	})

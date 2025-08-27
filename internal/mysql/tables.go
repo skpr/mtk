@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -15,10 +16,10 @@ import (
 )
 
 // ListTablesByGlob will return a list of tables based on a list of globs.
-func (d *Client) ListTablesByGlob(globs []string) ([]string, error) {
+func (d *Client) ListTablesByGlob(ctx context.Context, globs []string) ([]string, error) {
 	var globbed []string
 
-	tables, err := d.QueryTables()
+	tables, err := d.QueryTables(ctx)
 	if err != nil {
 		return globbed, fmt.Errorf("failed to query for tables: %w", err)
 	}
@@ -37,7 +38,7 @@ func (d *Client) ListTablesByGlob(globs []string) ([]string, error) {
 }
 
 // QueryTables will return a list of tables.
-func (d *Client) QueryTables() ([]string, error) {
+func (d *Client) QueryTables(ctx context.Context) ([]string, error) {
 	// Use the cached tables if we have them.
 	if len(d.cachedTables) > 0 {
 		return d.cachedTables, nil
@@ -45,7 +46,7 @@ func (d *Client) QueryTables() ([]string, error) {
 
 	tables := make([]string, 0)
 
-	rows, err := d.DB.Query("SHOW FULL TABLES")
+	rows, err := d.Conn.QueryContext(ctx, "SHOW FULL TABLES")
 	if err != nil {
 		return tables, err
 	}
@@ -74,29 +75,29 @@ func (d *Client) QueryTables() ([]string, error) {
 func (d *Client) getProviderClient() (provider.Interface, error) {
 	switch d.Provider {
 	case "rds":
-		client := rds.NewClient(d.DB, d.Logger, d.Region, d.URI)
+		client := rds.NewClient(d.Conn, d.Logger, d.Region, d.URI)
 		return client, nil
 	case "stdout":
-		return stdout.NewClient(d.DB, d.Logger), nil
+		return stdout.NewClient(d.Conn, d.Logger), nil
 	default:
 		return nil, errors.New("invalid provider")
 	}
 }
 
 // Helper function to get all data for a table.
-func (d *Client) selectAllDataForTable(table string, params provider.DumpParams) (*sql.Rows, []string, error) {
+func (d *Client) selectAllDataForTable(ctx context.Context, table string, params provider.DumpParams) (*sql.Rows, []string, error) {
 
 	client, err := d.getProviderClient()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	query, err := client.GetSelectQueryForTable(table, params)
+	query, err := client.GetSelectQueryForTable(ctx, table, params)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rows, err := d.DB.Query(query)
+	rows, err := d.Conn.QueryContext(ctx, query)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,14 +111,14 @@ func (d *Client) selectAllDataForTable(table string, params provider.DumpParams)
 }
 
 // GetRowCountForTable will return the number of rows using a SELECT statement.
-func (d *Client) GetRowCountForTable(table string, params provider.DumpParams) (uint64, error) {
+func (d *Client) GetRowCountForTable(ctx context.Context, table string, params provider.DumpParams) (uint64, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)
 
 	if where, ok := params.WhereMap[strings.ToLower(table)]; ok {
 		query = fmt.Sprintf("%s WHERE %s", query, where)
 	}
 
-	row := d.DB.QueryRow(query)
+	row := d.Conn.QueryRowContext(ctx, query)
 
 	var count uint64
 
@@ -129,16 +130,16 @@ func (d *Client) GetRowCountForTable(table string, params provider.DumpParams) (
 }
 
 // LockTableReading explicitly acquires table locks for the current client session.
-func (d *Client) LockTableReading(table string) (sql.Result, error) {
-	return d.DB.Exec(fmt.Sprintf("LOCK TABLES `%s` READ", table))
+func (d *Client) LockTableReading(ctx context.Context, table string) (sql.Result, error) {
+	return d.Conn.ExecContext(ctx, fmt.Sprintf("LOCK TABLES `%s` READ", table))
 }
 
 // UnlockTables explicitly releases any table locks held by the current session.
-func (d *Client) UnlockTables() (sql.Result, error) {
-	return d.DB.Exec("UNLOCK TABLES")
+func (d *Client) UnlockTables(ctx context.Context) (sql.Result, error) {
+	return d.Conn.ExecContext(ctx, "UNLOCK TABLES")
 }
 
 // FlushTable will force a tables to be closed.
-func (d *Client) FlushTable(table string) (sql.Result, error) {
-	return d.DB.Exec(fmt.Sprintf("FLUSH TABLES `%s`", table))
+func (d *Client) FlushTable(ctx context.Context, table string) (sql.Result, error) {
+	return d.Conn.ExecContext(ctx, fmt.Sprintf("FLUSH TABLES `%s`", table))
 }

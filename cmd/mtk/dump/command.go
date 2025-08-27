@@ -1,6 +1,7 @@
 package dump
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -36,6 +37,7 @@ const cmdExample = `
 type Options struct {
 	ConfigFile         string
 	ExtendedInsertRows int
+	SingleTransaction  bool
 }
 
 // NewOptions will return a new Options.
@@ -71,7 +73,7 @@ func NewCommand(conn *mysql.Connection, provider, rdsRegion, rdsS3uri string) *c
 				panic(err)
 			}
 
-			if err := o.Run(os.Stdout, logger, conn, database, table, provider, rdsRegion, rdsS3uri, cfg); err != nil {
+			if err := o.Run(cmd.Context(), os.Stdout, logger, conn, database, table, provider, rdsRegion, rdsS3uri, cfg); err != nil {
 				panic(err)
 			}
 		},
@@ -79,13 +81,14 @@ func NewCommand(conn *mysql.Connection, provider, rdsRegion, rdsS3uri string) *c
 
 	cmd.Flags().StringVar(&o.ConfigFile, "config", envar.GetStringWithFallback("", envar.Config), "Path to the configuration file which contains the rules")
 	cmd.Flags().IntVar(&o.ExtendedInsertRows, "extended-insert-rows", envar.GetIntWithFallback(1000, envar.ExtendedInsertRows), "The number of rows to batch per INSERT statement")
+	cmd.Flags().BoolVar(&o.SingleTransaction, "single-transaction", true, "No changes that occur to InnoDB tables during the dump will be included in the dump")
 
 	return cmd
 }
 
 // Run will execute the dump command.
-func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, database, table, provider, region, uri string, cfg config.Rules) error {
-	db, err := conn.Open(database)
+func (o *Options) Run(ctx context.Context, w io.Writer, logger *log.Logger, conn *mysql.Connection, database, table, provider, region, uri string, cfg config.Rules) error {
+	db, err := conn.Open(ctx, database, o.SingleTransaction)
 	if err != nil {
 		return fmt.Errorf("failed to open database connection: %w", err)
 	}
@@ -95,21 +98,21 @@ func (o *Options) Run(w io.Writer, logger *log.Logger, conn *mysql.Connection, d
 	client := mysql.NewClient(db, logger, provider, region, uri)
 
 	if table != "" {
-		return o.runDumpTable(w, client, table, cfg)
+		return o.runDumpTable(ctx, w, client, table, cfg)
 	}
 
-	return o.runDumpTables(w, client, cfg)
+	return o.runDumpTables(ctx, w, client, cfg)
 }
 
-func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Rules) error {
+func (o *Options) runDumpTables(ctx context.Context, w io.Writer, client *mysql.Client, cfg config.Rules) error {
 	// Get a list of tables to nodata, passed through a globber.
-	nodata, err := client.ListTablesByGlob(cfg.NoData)
+	nodata, err := client.ListTablesByGlob(ctx, cfg.NoData)
 	if err != nil {
 		return err
 	}
 
 	// Get a list of tables to ignore, passed through a globber.
-	ignore, err := client.ListTablesByGlob(cfg.Ignore)
+	ignore, err := client.ListTablesByGlob(ctx, cfg.Ignore)
 	if err != nil {
 		return err
 	}
@@ -138,7 +141,7 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 	where := make(map[string]string, 0)
 
 	for glob, condition := range cfg.WhereMap() {
-		tables, err := client.ListTablesByGlob([]string{glob})
+		tables, err := client.ListTablesByGlob(ctx, []string{glob})
 		if err != nil {
 			return err
 		}
@@ -150,14 +153,14 @@ func (o *Options) runDumpTables(w io.Writer, client *mysql.Client, cfg config.Ru
 
 	params.WhereMap = where
 
-	return client.DumpTables(w, params)
+	return client.DumpTables(ctx, w, params)
 }
 
 // Helper function to dump a single table.
 // This function builds a list of DumpParams to that are specific to this table to avoid any performance bottlenecks.
 //
 //	eg. runDumpTables has to perform ListTablesByGlobal for each table, which is slow.
-func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
+func (o *Options) runDumpTable(ctx context.Context, w io.Writer, client *mysql.Client, table string, cfg config.Rules) error {
 	params := provider.DumpParams{
 		ExtendedInsertRows: o.ExtendedInsertRows,
 	}
@@ -216,5 +219,5 @@ func (o *Options) runDumpTable(w io.Writer, client *mysql.Client, table string, 
 		}
 	}
 
-	return client.DumpTable(w, table, params)
+	return client.DumpTable(ctx, w, table, params)
 }
