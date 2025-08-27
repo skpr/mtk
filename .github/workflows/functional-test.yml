@@ -24,30 +24,30 @@ jobs:
 
       - name: "Test: Dump"
         run: |
-          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
-          mysql -uroot -proot test_db < .github/workflows/functional-test/fixtures/dump/db.sql
-          bin/mtk-linux-amd64 dump test_db --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
-          mysql -e 'DROP DATABASE test_db;' -uroot -proot
+          mysql -e 'CREATE DATABASE dump_test;' -uroot -proot
+          mysql -uroot -proot dump_test < .github/workflows/functional-test/fixtures/dump/db.sql
+          bin/mtk-linux-amd64 dump dump_test --port=3306 --user=root --password=root --host=127.0.0.1 > mtk-dump.sql
+          mysql -e 'DROP DATABASE dump_test;' -uroot -proot
           sed '$d' mtk-dump.sql > mtk-dump-clean.sql
-          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
-          mysql -uroot -proot test_db < mtk-dump-clean.sql
+          mysql -e 'CREATE DATABASE dump_test;' -uroot -proot
+          mysql -uroot -proot dump_test < mtk-dump-clean.sql
           diff -q .github/workflows/functional-test/fixtures/dump/db.sql mtk-dump-clean.sql
 
       - name: "Test: Dump Tables"
         run: |
-          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
+          mysql -e 'CREATE DATABASE dump_files_test;' -uroot -proot
           # Reusing the same fixture as our dump test
-          mysql -uroot -proot test_db < .github/workflows/functional-test/fixtures/dump/db.sql
+          mysql -uroot -proot dump_files_test < .github/workflows/functional-test/fixtures/dump/db.sql
           mkdir /tmp/dumps
-          bin/mtk-linux-amd64 dump-tables test_db --port=3306 --user=root --password=root --host=127.0.0.1 /tmp/dumps
-          mysql -e 'DROP DATABASE test_db;' -uroot -proot
+          bin/mtk-linux-amd64 dump-tables dump_files_test --port=3306 --user=root --password=root --host=127.0.0.1 /tmp/dumps
+          mysql -e 'DROP DATABASE dump_files_test;' -uroot -proot
           sed '$d' /tmp/dumps/products.sql > /tmp/dumps/products.sql
           sed '$d' /tmp/dumps/orders.sql > /tmp/dumps/orders.sql
           sed '$d' /tmp/dumps/users.sql > /tmp/dumps/users.sql
-          mysql -e 'CREATE DATABASE test_db;' -uroot -proot
-          mysql -uroot -proot test_db < /tmp/dumps/products.sql
-          mysql -uroot -proot test_db < /tmp/dumps/orders.sql
-          mysql -uroot -proot test_db < /tmp/dumps/users.sql
+          mysql -e 'CREATE DATABASE dump_files_test;' -uroot -proot
+          mysql -uroot -proot dump_files_test < /tmp/dumps/products.sql
+          mysql -uroot -proot dump_files_test < /tmp/dumps/orders.sql
+          mysql -uroot -proot dump_files_test < /tmp/dumps/users.sql
           diff -q .github/workflows/functional-test/fixtures/dump-tables/products.sql /tmp/dumps/products.sql
           diff -q .github/workflows/functional-test/fixtures/dump-tables/orders.sql /tmp/dumps/orders.sql
           diff -q .github/workflows/functional-test/fixtures/dump-tables/users.sql /tmp/dumps/users.sql
