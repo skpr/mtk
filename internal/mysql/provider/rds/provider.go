@@ -32,7 +32,7 @@ func NewClient(conn *sql.Conn, logger *log.Logger, region, uri string) *Client {
 	}
 }
 
-// GetSelectQueryForTable will return a complete SELECT query to export data from a table.
+// WriteTableData will export the data from a table to S3 and write the LOAD DATA query to the provided writer.
 func (d *Client) WriteTableData(ctx context.Context, w io.Writer, table string, params provider.DumpParams) error {
 	// Push table data to s3.
 	err := d.exportTableData(ctx, table, params)
