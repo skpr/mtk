@@ -27,14 +27,14 @@ func TestWriteTableData(t *testing.T) {
 	// 1) QueryColumnsForTable runs: expect the probe query and return columns.
 	mock.
 		ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` LIMIT 1")).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "name"})) // Columns only
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name"})) // columns only is fine
 
-	// 2) exportTableData runs: expect the exact OUTFILE S3 query with backticked cols.
+	// 2) exportTableData runs: now that code uses ExecContext, expect an Exec.
 	exportSQL := "SELECT `id`, `name` FROM `users` INTO OUTFILE S3 's3://my-bucket/prefix/users.csv' " +
 		"FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' MANIFEST ON OVERWRITE ON"
 	mock.
-		ExpectQuery(regexp.QuoteMeta(exportSQL)).
-		WillReturnRows(sqlmock.NewRows([]string{}))
+		ExpectExec(regexp.QuoteMeta(exportSQL)).
+		WillReturnResult(sqlmock.NewResult(0, 0)) // no rows affected is fine
 
 	// Client + buffer for the LOAD DATA query
 	buf := &bytes.Buffer{}
