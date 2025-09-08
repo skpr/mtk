@@ -57,7 +57,7 @@ func TestWriteTableData(t *testing.T) {
 	got := buf.String()
 	want := "LOAD DATA FROM S3 MANIFEST 'S3-ap-southeast-2://my-bucket/prefix/users.csv.manifest' " +
 		"INTO TABLE `users` CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' " +
-		"LINES TERMINATED BY '\\n'\n"
+		"LINES TERMINATED BY '\\n';\n"
 	if got != want {
 		t.Fatalf("unexpected load query:\n--- got ---\n%s\n--- want ---\n%s", got, want)
 	}

@@ -90,7 +90,7 @@ func (d *Client) writeLoadQueryForTable(w io.Writer, table string) error {
 
 	path := strings.TrimPrefix(d.URI, "s3://")
 	query := fmt.Sprintf("LOAD DATA FROM S3 MANIFEST 'S3-%s://%s/%s.csv.manifest' INTO TABLE `%s` CHARACTER SET utf8mb4", d.Region, path, table, table)
-	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+	query = fmt.Sprintf("%s FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';", query)
 
 	_, err := fmt.Fprintln(w, query)
 	return err
