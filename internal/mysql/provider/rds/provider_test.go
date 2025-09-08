@@ -1,35 +1,69 @@
 package rds
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"log"
-	"os"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
-
-	"github.com/skpr/mtk/internal/mysql/mock"
 	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
-func TestMySQLGetExportSelectQueryFor(t *testing.T) {
-	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "ap-southheast-2", "s3://path/to/bucket")
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
-		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
-	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
-		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
-		WhereMap:  map[string]string{"table": "c1 > 0"},
-	})
-	assert.Nil(t, err)
-	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0 INTO OUTFILE S3 's3://path/to/bucket/table.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' MANIFEST ON OVERWRITE ON", query)
-}
+func TestWriteTableData(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock.New error: %v", err)
+	}
+	defer db.Close()
 
-func TestMySQLGetLoadQueryFor(t *testing.T) {
-	db, _ := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0), "ap-southeast-4", "s3://path/to/bucket")
-	query, err := dumper.GetLoadQueryForTable("table_name")
-	assert.Nil(t, err)
-	assert.Equal(t, "LOAD DATA FROM S3 MANIFEST 'S3-ap-southeast-4://path/to/bucket/table_name.csv.manifest' INTO TABLE `table_name` CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n'", query)
+	conn, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatalf("db.Conn error: %v", err)
+	}
+
+	// 1) QueryColumnsForTable runs: expect the probe query and return columns.
+	mock.
+		ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` LIMIT 1")).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name"})) // Columns only
+
+	// 2) exportTableData runs: expect the exact OUTFILE S3 query with backticked cols.
+	exportSQL := "SELECT `id`, `name` FROM `users` INTO OUTFILE S3 's3://my-bucket/prefix/users.csv' " +
+		"FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n' MANIFEST ON OVERWRITE ON"
+	mock.
+		ExpectQuery(regexp.QuoteMeta(exportSQL)).
+		WillReturnRows(sqlmock.NewRows([]string{}))
+
+	// Client + buffer for the LOAD DATA query
+	buf := &bytes.Buffer{}
+	c := &Client{
+		Conn:   conn,
+		Logger: log.New(io.Discard, "", 0),
+		Region: "ap-southeast-2",
+		URI:    "s3://my-bucket/prefix",
+	}
+
+	// Run the full flow
+	if err := c.WriteTableData(context.Background(), buf, "users", provider.DumpParams{
+		WhereMap:  map[string]string{},
+		SelectMap: map[string]map[string]string{},
+	}); err != nil {
+		t.Fatalf("WriteTableData error: %v", err)
+	}
+
+	// Assert the LOAD DATA query is exactly written (including newline)
+	got := buf.String()
+	want := "LOAD DATA FROM S3 MANIFEST 'S3-ap-southeast-2://my-bucket/prefix/users.csv.manifest' " +
+		"INTO TABLE `users` CHARACTER SET utf8mb4 FIELDS TERMINATED BY ',' ENCLOSED BY '\"' " +
+		"LINES TERMINATED BY '\\n'\n"
+	if got != want {
+		t.Fatalf("unexpected load query:\n--- got ---\n%s\n--- want ---\n%s", got, want)
+	}
+
+	// Ensure all expectations met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet sqlmock expectations: %v", err)
+	}
 }

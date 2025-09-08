@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"io"
 	"strings"
@@ -121,69 +120,12 @@ func (d *Client) WriteTableHeader(ctx context.Context, w io.Writer, table string
 func (d *Client) WriteTableData(ctx context.Context, w io.Writer, table string, params provider.DumpParams) error {
 	d.Logger.Println("Dumping data for table:", table)
 
-	rows, columns, err := d.selectAllDataForTable(ctx, table, params)
+	client, err := d.getProviderClient()
 	if err != nil {
 		return err
 	}
 
-	defer rows.Close()
-
-	values := make([]*sql.RawBytes, len(columns))
-	scanArgs := make([]interface{}, len(values))
-
-	for i := range values {
-		scanArgs[i] = &values[i]
-	}
-
-	var (
-		counter  = 0
-		firstRun = true
-	)
-
-	for rows.Next() {
-		// We have already done a loop and need to close the previous insert statement.
-		if counter >= params.ExtendedInsertRows {
-			fmt.Fprintln(w, ";")
-			counter = 0
-		} else {
-			if !firstRun {
-				fmt.Fprint(w, ",")
-			}
-		}
-
-		if counter == 0 {
-			fmt.Fprintf(w, "INSERT INTO `%s` VALUES ", table)
-		}
-
-		counter++
-
-		firstRun = false
-
-		if err = rows.Scan(scanArgs...); err != nil {
-			return err
-		}
-
-		var vals []string
-
-		for _, col := range values {
-			val := "NULL"
-
-			if col != nil {
-				val, err = getValue(string(*col))
-				if err != nil {
-					return err
-				}
-			}
-
-			vals = append(vals, val)
-		}
-
-		fmt.Fprintf(w, "(%s)", strings.Join(vals, ","))
-	}
-
-	fmt.Fprintln(w, ";")
-
-	return nil
+	return client.WriteTableData(ctx, w, table, params)
 }
 
 // WriteTables will create a script for all tables.

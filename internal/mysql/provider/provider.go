@@ -1,10 +1,13 @@
 package provider
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 // Interface implements the required functionality for a Provider.
 type Interface interface {
-	GetSelectQueryForTable(ctx context.Context, table string, params DumpParams) (string, error)
+	WriteTableData(ctx context.Context, w io.Writer, table string, params DumpParams) error
 }
 
 // DumpParams is used to pass parameters to the Dump function.

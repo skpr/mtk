@@ -84,32 +84,6 @@ func (d *Client) getProviderClient() (provider.Interface, error) {
 	}
 }
 
-// Helper function to get all data for a table.
-func (d *Client) selectAllDataForTable(ctx context.Context, table string, params provider.DumpParams) (*sql.Rows, []string, error) {
-
-	client, err := d.getProviderClient()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	query, err := client.GetSelectQueryForTable(ctx, table, params)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	rows, err := d.Conn.QueryContext(ctx, query)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	columns, err := rows.Columns()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return rows, columns, nil
-}
-
 // GetRowCountForTable will return the number of rows using a SELECT statement.
 func (d *Client) GetRowCountForTable(ctx context.Context, table string, params provider.DumpParams) (uint64, error) {
 	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)

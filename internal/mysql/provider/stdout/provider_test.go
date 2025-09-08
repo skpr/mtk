@@ -1,41 +1,72 @@
 package stdout
 
 import (
+	"bytes"
 	"context"
-	"errors"
+	"io"
 	"log"
-	"os"
+	"regexp"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
-
-	"github.com/skpr/mtk/internal/mysql/mock"
 	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
-func TestMySQLGetSelectQueryFor(t *testing.T) {
-	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnRows(
-		sqlmock.NewRows([]string{"c1", "c2"}).AddRow("a", "b"))
-	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
-		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
-		WhereMap:  map[string]string{"table": "c1 > 0"},
-	})
-	assert.Nil(t, err)
-	assert.Equal(t, "SELECT `c1`, NOW() AS `c2` FROM `table` WHERE c1 > 0", query)
-}
+func TestWriteTableData(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("sqlmock.New error: %v", err)
+	}
+	defer db.Close()
 
-func TestMySQLGetSelectQueryForHandlingError(t *testing.T) {
-	db, mock := mock.GetDB(t)
-	dumper := NewClient(db, log.New(os.Stdout, "", 0))
-	e := errors.New("broken")
-	mock.ExpectQuery("SELECT \\* FROM `table` LIMIT 1").WillReturnError(e)
-	query, err := dumper.GetSelectQueryForTable(context.TODO(), "table", provider.DumpParams{
-		SelectMap: map[string]map[string]string{"table": {"c2": "NOW()"}},
-		WhereMap:  map[string]string{"table": "c1 > 0"},
-	})
-	assert.Equal(t, e, err)
-	assert.Equal(t, "", query)
+	conn, err := db.Conn(context.Background())
+	if err != nil {
+		t.Fatalf("db.Conn error: %v", err)
+	}
+
+	// Probe from utils.QueryColumnsForTable
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `users` LIMIT 1")).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "name"}))
+
+	// Main SELECT that GetSelectQueryForTable issues
+	mainSelect := "SELECT `id`, `name` FROM `users`"
+	rows := sqlmock.NewRows([]string{"id", "name"}).
+		AddRow(1, "Alice").
+		AddRow(2, "Bob").
+		AddRow(3, "Charlie").
+		AddRow(4, "Dana").
+		AddRow(5, "Eve")
+	mock.ExpectQuery(regexp.QuoteMeta(mainSelect)).WillReturnRows(rows)
+
+	var out bytes.Buffer
+	c := &Client{
+		Conn:   conn,
+		Logger: log.New(io.Discard, "", 0),
+	}
+
+	params := provider.DumpParams{
+		ExtendedInsertRows: 2,
+		WhereMap:           map[string]string{},
+		SelectMap:          map[string]map[string]string{},
+	}
+
+	if err := c.WriteTableData(context.Background(), &out, "users", params); err != nil {
+		t.Fatalf("WriteTableData returned error: %v", err)
+	}
+
+	got := out.String()
+
+	// Expect two batches of 2 and one batch of 1 (with final semicolon inline).
+	want :=
+		"INSERT INTO `users` VALUES (1,'Alice'),(2,'Bob');\n" +
+			"INSERT INTO `users` VALUES (3,'Charlie'),(4,'Dana');\n" +
+			"INSERT INTO `users` VALUES (5,'Eve');\n"
+
+	if got != want {
+		t.Fatalf("unexpected writer output:\n--- got ---\n%s--- want ---\n%s", got, want)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatalf("unmet sqlmock expectations: %v", err)
+	}
 }
