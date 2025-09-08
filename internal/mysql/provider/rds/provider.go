@@ -70,7 +70,7 @@ func (d *Client) exportTableData(ctx context.Context, table string, params provi
 	query = fmt.Sprintf("%s MANIFEST ON", query)
 	query = fmt.Sprintf("%s OVERWRITE ON", query)
 
-	_, err = d.Conn.QueryContext(ctx, query)
+	_, err = d.Conn.ExecContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("error exporting data to S3 for table %s: %w", table, err)
 	}
