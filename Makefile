@@ -13,12 +13,4 @@ build:
 	$(call build_step,darwin,amd64)
 	$(call build_step,darwin,arm64)
 
-# Run all lint checking with exit codes for CI.
-lint:
-	revive -config revive.toml -set_exit_status ./cmd/... ./internal/... ./pkg/...
-
-# Run tests with coverage reporting.
-test:
-	go test -cover ./...
-
 .PHONY: *
