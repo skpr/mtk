@@ -13,12 +13,15 @@ jobs:
       - name: ⬇️ Git clone the repository
         uses: actions/checkout@v5
 
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.21'
+      - name: 📦 Install Mise
+        run: |
+          curl https://mise.run | sh
+          mise install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build MTK
-        run: make build
+        run: mise run build
 
       - name: Start MySQL
         run: sudo /etc/init.d/mysql start
