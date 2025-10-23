@@ -1,5 +1,7 @@
 [tools]
 go = "1.21"
+node = "24.10"
+pnpm = "10.17"
 "go:github.com/daixiang0/gci" = "latest"
 "ubi:golangci/golangci-lint" = "latest"
 "ubi:goreleaser/goreleaser" = "latest"
@@ -16,6 +18,17 @@ run = "go mod tidy"
 description = "Build the application"
 run = "go build -o bin/mtk -ldflags=${CLI_LDFLAGS} github.com/skpr/mtk/cmd/mtk"
 depends = ["vendor"]
+
+[tasks."install:pnpm"]
+description = "Install node modules for docs"
+run = "pnpm install"
+dir = "docs"
+
+[tasks."build:docs"]
+description = "Build the documentation"
+run = "pnpm run build"
+dir = "docs"
+depends = ["install:pnpm"]
 
 [tasks."lint"]
 description = "Linting automatically checks code for errors and style issues"

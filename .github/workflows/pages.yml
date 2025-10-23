@@ -3,7 +3,8 @@ name: Deploy Docusaurus to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: [main]
+    branches:
+      - main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -29,25 +30,24 @@ jobs:
       - name: ⬇️ Git clone the repository
         uses: actions/checkout@v5
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20.x
+      - name: 📦 Install Mise
+        run: |
+          curl https://mise.run | sh
+          mise install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install and Build
-        run: |
-          cd docs
-          npm install --non-interactive
-          npm run build
+        run: mise build:docs
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v4
         with:
           path: docs/build
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
