@@ -1,0 +1,33 @@
+[tools]
+go = "1.21"
+"go:github.com/daixiang0/gci" = "latest"
+"ubi:golangci/golangci-lint" = "latest"
+"ubi:goreleaser/goreleaser" = "latest"
+
+[tasks.vendor]
+description = "Vendor resets the main module's vendor directory to include all packages needed to build the application"
+run = "go mod vendor"
+
+[tasks.tidy]
+description = "Tidy makes sure go.mod matches the source code in the module"
+run = "go mod tidy"
+
+[tasks.build]
+description = "Build the application"
+run = "go build -o bin/mtk -ldflags=${CLI_LDFLAGS} github.com/skpr/mtk/cmd/mtk"
+depends = ["vendor"]
+
+[tasks."lint"]
+description = "Linting automatically checks code for errors and style issues"
+run = "golangci-lint run"
+depends = ["tidy"]
+
+[tasks.test]
+description = "Checks to verify code correctness"
+run = "go test -cover ./..."
+depends = ["vendor"]
+
+[tasks.release]
+description = "Release the command line interface"
+run = "goreleaser"
+depends = ["vendor"]
