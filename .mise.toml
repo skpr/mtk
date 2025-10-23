@@ -1,5 +1,5 @@
 [tools]
-go = "1.21"
+go = "1.25"
 node = "24.10"
 pnpm = "10.17"
 "go:github.com/daixiang0/gci" = "latest"
