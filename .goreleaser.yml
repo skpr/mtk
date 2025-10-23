@@ -1,0 +1,32 @@
+project_name: ltmm-content-moderation-service
+version: 2
+
+builds:
+  - id: mtk
+    main: cmd/mtk/main.go
+    binary: mtk
+    ldflags:
+      - -extldflags '-static' -X 'main.version={{.Version}}' -w -s
+    env:
+      - CGO_ENABLED=0
+    goos: [ linux, darwin ]
+    goarch: [ amd64, arm64 ]
+archives:
+  - ids:
+      - none
+
+checksum:
+  disable: true
+
+dockers_v2:
+  - id: mtk
+    ids:
+      - mtk
+    images:
+      - "ghcr.io/skpr/mtk"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+
+changelog:
+  use: github-native
