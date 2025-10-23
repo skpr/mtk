@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+
 	"github.com/skpr/mtk/internal/mysql/provider"
 )
 
