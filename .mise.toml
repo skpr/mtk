@@ -44,3 +44,8 @@ depends = ["vendor"]
 description = "Release the command line interface"
 run = "goreleaser"
 depends = ["vendor"]
+
+[tasks."release:test"]
+description = "Release the command line interface"
+run = "goreleaser --clean --snapshot --skip=publish"
+depends = ["vendor"]
