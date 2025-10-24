@@ -28,6 +28,7 @@ dockers_v2:
     tags:
       - "v{{ .Version }}"
       - "latest"
+    sbom: false
 
 changelog:
   use: github-native
