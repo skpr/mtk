@@ -19,45 +19,16 @@ archives:
 checksum:
   disable: true
 
-#dockers_v2:
-#  - id: mtk
-#    ids:
-#      - mtk
-#    images:
-#      - "ghcr.io/skpr/mtk"
-#    tags:
-#      - "v{{ .Version }}"
-#      - "latest"
-#    sbom: false
-
-dockers:
-  - dockerfile: Dockerfile
-    image_templates:
-      - "ghcr.io/skpr/mtk:v{{ .Version }}-amd64"
-      - "ghcr.io/skpr/mtk:latest-amd64"
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/amd64"
-    use: buildx
-  - dockerfile: Dockerfile
-    image_templates:
-      - "ghcr.io/skpr/mtk:v{{ .Version }}-arm64"
-      - "ghcr.io/skpr/mtk:latest-arm64"
-    build_flag_templates:
-      - "--pull"
-      - "--platform=linux/arm64"
-    use: buildx
-    goarch: arm64
-
-docker_manifests:
-  - name_template: "ghcr.io/skpr/mtk:v{{ .Version }}"
-    image_templates:
-      - "ghcr.io/skpr/mtk:v{{ .Version }}-amd64"
-      - "ghcr.io/skpr/mtk:v{{ .Version }}-arm64"
-  - name_template: "ghcr.io/skpr/mtk:latest"
-    image_templates:
-      - "ghcr.io/skpr/mtk:latest-amd64"
-      - "ghcr.io/skpr/mtk:latest-arm64"
+dockers_v2:
+  - id: mtk
+    ids:
+      - mtk
+    images:
+      - "ghcr.io/skpr/mtk"
+    tags:
+      - "v{{ .Version }}"
+      - "latest"
+    sbom: false
 
 changelog:
   use: github-native
