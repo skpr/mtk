@@ -1,9 +1,9 @@
 [tools]
-go = "1.25"
+go = "1.26"
 node = "24.10"
 pnpm = "10.17"
 "go:github.com/daixiang0/gci" = "latest"
-"ubi:golangci/golangci-lint" = "latest"
+"ubi:golangci/golangci-lint" = "2.10"
 "ubi:goreleaser/goreleaser" = "latest"
 
 [tasks.vendor]
