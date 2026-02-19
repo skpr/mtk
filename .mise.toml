@@ -4,7 +4,7 @@ node = "24.10"
 pnpm = "10.17"
 "go:github.com/daixiang0/gci" = "latest"
 "ubi:golangci/golangci-lint" = "2.10"
-"ubi:goreleaser/goreleaser" = "latest"
+"ubi:goreleaser/goreleaser" = "2.12"
 
 [tasks.vendor]
 description = "Vendor resets the main module's vendor directory to include all packages needed to build the application"
