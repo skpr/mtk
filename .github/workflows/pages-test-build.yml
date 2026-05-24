@@ -1,0 +1,36 @@
+name: Deploy Docusaurus to Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docs/**
+  pull_request:
+    paths:
+      - docs/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "pages-test-build"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Git clone the repository
+        uses: actions/checkout@v6
+
+      - name: 📦 Install Mise
+        run: |
+          curl https://mise.run | sh
+          mise install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install and Build
+        run: mise build:docs
