@@ -3,10 +3,8 @@ name: Deploy Docusaurus to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches:
-      - main
-    paths:
-      - docs/**
+    tags:
+      - 'docs-v*'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,7 +28,7 @@ jobs:
 
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: 📦 Install Mise
         run: |
