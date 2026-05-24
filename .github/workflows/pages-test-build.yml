@@ -1,4 +1,4 @@
-name: Deploy Docusaurus to Pages
+name: Test build pages
 
 on:
   push:
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
 
     steps:
