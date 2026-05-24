@@ -1,3 +1,5 @@
+allowBuilds:
+  core-js: true
 onlyBuiltDependencies:
   - core-js
   - core-js-pure
