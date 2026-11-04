@@ -9,6 +9,11 @@ updates:
       go-dependencies:
         patterns:
           - "*"
+      gomod-security-deps:
+        applies-to: security-updates
+        patterns: [ "*" ]
+    cooldown:
+      default-days: 2
 
   - package-ecosystem: npm
     directory: "/docs"
@@ -18,3 +23,8 @@ updates:
       pnpm-deps:
         patterns:
           - "*"
+      pnpm-security-deps:
+        applies-to: security-updates
+        patterns: [ "*" ]
+    cooldown:
+      default-days: 2
