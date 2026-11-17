@@ -23,7 +23,7 @@ jobs:
           --health-retries=20
 
     env:
-      # Point the mysql client at the service container instead of a local socket.
+      # Point the runner image's mysql client at the service container instead of a local socket.
       MYSQL_HOST: 127.0.0.1
 
     steps:
@@ -39,11 +39,6 @@ jobs:
 
       - name: Build MTK
         run: mise run build
-
-      - name: Install MySQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
 
       - name: "Test: Dump"
         run: |
