@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 📦 Install Mise
         run: |
