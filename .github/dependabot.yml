@@ -9,6 +9,11 @@ updates:
       go-dependencies:
         patterns:
           - "*"
+        update-types: [ "minor", "patch" ]
+      go-major-dependencies:
+        patterns:
+          - "*"
+        update-types: [ "major" ]
       gomod-security-deps:
         applies-to: security-updates
         patterns: [ "*" ]
@@ -23,6 +28,11 @@ updates:
       pnpm-deps:
         patterns:
           - "*"
+        update-types: [ "minor", "patch" ]
+      pnpm-major-deps:
+        patterns:
+          - "*"
+        update-types: [ "major" ]
       pnpm-security-deps:
         applies-to: security-updates
         patterns: [ "*" ]
