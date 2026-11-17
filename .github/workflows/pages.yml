@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 📦 Install Mise
         run: |
@@ -41,13 +41,13 @@ jobs:
         run: mise build:docs
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/build
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
