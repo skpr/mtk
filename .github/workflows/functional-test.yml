@@ -9,9 +9,26 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      # Point the runner image's mysql client at the service container instead of a local socket.
+      MYSQL_HOST: 127.0.0.1
+
     steps:
       - name: ⬇️ Git clone the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 📦 Install Mise
         run: |
@@ -22,9 +39,6 @@ jobs:
 
       - name: Build MTK
         run: mise run build
-
-      - name: Start MySQL
-        run: sudo /etc/init.d/mysql start
 
       - name: "Test: Dump"
         run: |
