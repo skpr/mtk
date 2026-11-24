@@ -5,12 +5,18 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      day: "wednesday"
+      time: "07:30"
+      timezone: "Australia/Sydney"
+    commit-message:
+      prefix: "build"
+      include: "scope"
     groups:
-      go-dependencies:
+      gomod-deps:
         patterns:
           - "*"
         update-types: [ "minor", "patch" ]
-      go-major-dependencies:
+      gomod-major-deps:
         patterns:
           - "*"
         update-types: [ "major" ]
@@ -24,6 +30,12 @@ updates:
     directory: "/docs"
     schedule:
       interval: weekly
+      day: "wednesday"
+      time: "07:30"
+      timezone: "Australia/Sydney"
+    commit-message:
+      prefix: "build"
+      include: "scope"
     groups:
       pnpm-deps:
         patterns:
@@ -38,3 +50,26 @@ updates:
         patterns: [ "*" ]
     cooldown:
       default-days: 2
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "07:30"
+      timezone: "Australia/Sydney"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    cooldown:
+      default-days: 2
+    groups:
+      github-actions-deps:
+        patterns: [ "*" ]
+        update-types: [ "minor", "patch" ]
+      github-actions-major-deps:
+        patterns: [ "*" ]
+        update-types: [ "major" ]
+      github-actions-security-deps:
+        applies-to: security-updates
+        patterns: [ "*" ]
